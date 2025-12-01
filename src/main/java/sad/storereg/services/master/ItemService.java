@@ -28,6 +28,12 @@ public class ItemService {
     		return itemRepository.findAll(pageable);
     	else return itemRepository.findAllByCategory_Code(category, pageable);
     }
+    
+    public List<Item> getItemsList(String search, String category) {
+    	if(category==null || category.equals("") || category.equals("All"))
+    		return itemRepository.findAll();
+    	else return itemRepository.findAllByCategory_Code(category);
+    }
 
     public String createItem(ItemDTO request) {
 
