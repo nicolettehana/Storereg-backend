@@ -2,6 +2,9 @@ package sad.storereg.models.master;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Data
 @Entity
 @Table(name = "year_range", schema = "master")
@@ -25,6 +29,7 @@ public class YearRange {
     @Column(name = "end_year", nullable = false)
     private Integer endYear;
 
+    @JsonIgnore
     @Column(name = "entrydate")
     private LocalDateTime entryDate;
 
