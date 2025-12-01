@@ -40,6 +40,16 @@ public class ItemController {
 
         return itemService.getItems(pageable, search, category);
     }
+    
+    @GetMapping({ "/list/{category}" })
+    public List<Item> getListItems(
+    		 @PathVariable(required = false) String category,
+    	        @RequestParam(defaultValue = "") String search
+    ) {
+
+        return itemService.getItemsList(search, category);
+    }
+
 
     @PostMapping
     public ResponseEntity<?> createItem(@RequestBody ItemDTO request) {

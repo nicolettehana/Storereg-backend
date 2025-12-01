@@ -15,6 +15,8 @@ public interface ItemRepository extends JpaRepository<Item, Long>{
 	
 	Page<Item> findAllByCategory_Code(String category, Pageable pageable);
 	
+	List<Item> findAllByCategory_Code(String category);
+	
 	@Query("""
 	        SELECT new sad.storereg.dto.appdata.CategoryCountDTO(
 	            i.category.name,

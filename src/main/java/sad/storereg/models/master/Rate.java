@@ -16,12 +16,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 @Data
 @Entity
 @Table(name = "rates", schema = "master")
 @RequiredArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@ToString(exclude = {"subItem"})
 public class Rate {
 	
 	@Id
@@ -33,23 +35,30 @@ public class Rate {
 	@JoinColumn(name = "year_range_id", nullable = false)
 	private YearRange yearRange;
 
-
-	@Column(name = "object_type", nullable = false)
-	private String objectType; // "item" or "subItem"
-
+//
+//	@Column(name = "object_type", nullable = false)
+//	private String objectType; // "item" or "subItem"
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "object_id", insertable = false, updatable = false)
+	@JoinColumn(name = "item_id")
 	private Item item;
 
-
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "object_id", insertable = false, updatable = false)
+	@JoinColumn(name = "sub_item_id")
 	private SubItems subItem;
 
+//	@ManyToOne(fetch = FetchType.LAZY)
+//	@JoinColumn(name = "object_id", insertable = false, updatable = false)
+//	private Item item;
 
-	@Column(name = "object_id", nullable = false)
-	private Long objectId;
+
+//	@ManyToOne(fetch = FetchType.LAZY)
+//	@JoinColumn(name = "sub_item_id", insertable = false, updatable = false)
+//	private SubItems subItem;
+
+
+	//@Column(name = "object_id", nullable = false)
+	//private Long objectId;
 
 
 	@ManyToOne(fetch = FetchType.LAZY)
