@@ -1,9 +1,5 @@
 package sad.storereg.controller.master;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,20 +13,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import sad.storereg.dto.appdata.CategoryCountDTO;
-import sad.storereg.dto.master.ItemDTO;
-import sad.storereg.models.master.Item;
-import sad.storereg.services.master.ItemService;
+import sad.storereg.dto.master.CreateFirmDTO;
+import sad.storereg.dto.master.FirmsDTO;
+import sad.storereg.models.master.Firm;
+import sad.storereg.services.master.FirmService;
 
 @RestController
-@RequestMapping("/items")
+@RequestMapping("/firms")
 @RequiredArgsConstructor
-public class ItemController {
-
-	private final ItemService itemService;
+public class FirmController {
+	
+	private final FirmService firmService;
 
     @GetMapping({ "", "/{category}" })
-    public Page<Item> getPaginatedItems(
+    public Page<FirmsDTO> getPaginatedFirms(
     		 @PathVariable(required = false) String category,
     	        @RequestParam(defaultValue = "0") int page,
     	        @RequestParam(defaultValue = "10") int size,
@@ -38,23 +34,13 @@ public class ItemController {
     ) {
         Pageable pageable = PageRequest.of(page, size);
 
-        return itemService.getItems(pageable, search, category);
-    }
-
-    @PostMapping
-    public ResponseEntity<?> createItem(@RequestBody ItemDTO request) {
-      
-        return ResponseEntity.ok(itemService.createItem(request));
+        return firmService.getFirms(pageable, search, category);
     }
     
-    @GetMapping("/stats")
-    public ResponseEntity<Map<String, Object>> getCategoryCounts() {
-    	 Map<String, Object> response = new HashMap<>();
-         response.put("total", itemService.getTotalItems());
-         response.put("byCategory", itemService.getCategoryCounts());
-
-         //return response;
-        //List<CategoryCountDTO> counts = itemService.getCategoryCounts();
-        return ResponseEntity.ok(response);
+    @PostMapping
+    public ResponseEntity<?> createFirm(@RequestBody CreateFirmDTO request) {
+        
+        return ResponseEntity.ok(firmService.createFirm(request));
     }
+
 }
