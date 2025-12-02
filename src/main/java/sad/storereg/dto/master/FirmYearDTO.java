@@ -9,13 +9,13 @@ import lombok.Data;
 @Data
 public class FirmYearDTO {
 	
-	//@Required
+	@Required
 	private Long firmId;
 	
-	//@Required
+	@Required
 	private Integer yearRangeId;
 	
-	//@Required
+	@Required
 	private List<String> categories;
 
 }
