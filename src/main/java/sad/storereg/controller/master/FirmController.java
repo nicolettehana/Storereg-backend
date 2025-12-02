@@ -59,8 +59,8 @@ public class FirmController {
     
     @PostMapping("/add-approved")
     public ResponseEntity<?> createFirmYear(@RequestBody FirmYearDTO request) {
-    	return null;
-        //return ResponseEntity.ok(firmService.createFirmYear(request));
+    	
+        return ResponseEntity.ok(firmService.createFirmYear(request));
     }
 
 }

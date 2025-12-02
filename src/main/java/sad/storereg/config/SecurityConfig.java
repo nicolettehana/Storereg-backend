@@ -107,7 +107,7 @@ public class SecurityConfig {
 //	            )
 		.authorizeHttpRequests(auth -> auth .requestMatchers("/auth/**", "/csrf-token","/api/**","/my-report","/api2").permitAll() 
 				.requestMatchers(GET, "/users/get-user-info").hasAnyAuthority(USER.name(), ADMIN.name()) 
-				.requestMatchers(GET, "/menu","/status","/year-range","/items/**","/category/**","/firms/**","/unit","rates/**") .hasAnyAuthority(ADMIN.name(), CH.name(), USER.name(), EST.name(), SAD.name()) 
+				.requestMatchers(GET, "/menu","/status","/year-range","/items/**","/category/**","/firms/**","/unit","rates/**","/purchase/**") .hasAnyAuthority(ADMIN.name(), CH.name(), USER.name(), EST.name(), SAD.name()) 
 				.requestMatchers(GET, "/users/profile") .hasAnyAuthority(ADMIN.name(), CH.name(), USER.name(), EST.name(), SAD.name()) 
 				.requestMatchers(POST, "/users/change-password","/users/update","/users/verify-otp-update-mobile","/users/send-otp-update-mobile","/verify-otp-login") .hasAnyAuthority(ADMIN.name(), CH.name(), USER.name(), EST.name()) 
 				.requestMatchers(POST, "/quarters","/vacate/**","/occupants/add","/allotment/occupy","/allotment/get-applicant-letter","/vacate-request/accept","/vacate-request/reject", "/occupants/add-quarter-occupant") .hasAnyAuthority(EST.name()) 

@@ -14,15 +14,18 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import sad.storereg.dto.master.CreateFirmDTO;
+import sad.storereg.dto.master.FirmYearDTO;
 import sad.storereg.dto.master.FirmsDTO;
 import sad.storereg.models.master.Category;
 import sad.storereg.models.master.Firm;
 import sad.storereg.models.master.FirmCategory;
 import sad.storereg.models.master.FirmYear;
+import sad.storereg.models.master.YearRange;
 import sad.storereg.repo.master.CategoryRepository;
 import sad.storereg.repo.master.FirmCategoryRepository;
 import sad.storereg.repo.master.FirmYearRepository;
 import sad.storereg.repo.master.FirmsRepository;
+import sad.storereg.repo.master.YearRangeRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +35,7 @@ public class FirmService {
 	private final FirmCategoryRepository firmCategoryRepository;
 	private final CategoryRepository categoryRepository;
 	private final FirmYearRepository firmYearRepository;
+	private final YearRangeRepository yearRangeRepository;
 
 	public Page<FirmsDTO> getFirms(Pageable pageable, String search, String category) {
 	    Page<Firm> page;
@@ -192,6 +196,39 @@ public class FirmService {
         return firms.stream()
                 .map(this::convertToDto)
                 .toList();
+    }
+    
+    @Transactional
+    public String createFirmYear(FirmYearDTO request) {
+
+        // --- Validate Firm ---
+        Firm firm = firmRepository.findById(request.getFirmId())
+                .orElseThrow(() -> new RuntimeException("Firm not found with id: " + request.getFirmId()));
+
+        // --- Validate YearRange ---
+        YearRange yearRange = yearRangeRepository.findById(request.getYearRangeId())
+                .orElseThrow(() -> new RuntimeException("YearRange not found with id: " + request.getYearRangeId()));
+
+        List<FirmYear> created = new ArrayList<>();
+
+        // --- Create one FirmYear per category ---
+        for (String categoryCode : request.getCategories()) {
+
+            Category category = categoryRepository.findById(categoryCode)
+                    .orElseThrow(() -> new RuntimeException("Category not found: " + categoryCode));
+
+            if(firmYearRepository.findByYearRange_IdAndCategory_CodeAndFirm_Id(yearRange.getId(), categoryCode, firm.getId()).isEmpty()){
+            
+	            FirmYear fy = new FirmYear();
+	            fy.setFirm(firm);
+	            fy.setYearRange(yearRange);
+	            fy.setCategory(category);
+	
+	            created.add(firmYearRepository.save(fy));
+            }
+        }
+
+        return "Firm approved";
     }
 
 }
