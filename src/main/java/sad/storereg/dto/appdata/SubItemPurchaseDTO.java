@@ -9,5 +9,6 @@ public class SubItemPurchaseDTO {
     private Integer quantity;
     private Double rate;
     private Double amount;
+    private String unit;
 
 }

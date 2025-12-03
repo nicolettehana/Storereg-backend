@@ -12,6 +12,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import sad.storereg.models.master.Item;
 import sad.storereg.models.master.SubItems;
+import sad.storereg.models.master.Unit;
 
 @Data
 @Entity
@@ -45,5 +46,10 @@ public class PurchaseItems {
 
     @Column(name = "amount", nullable = false)
     private Double amount;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "unit_id", nullable = false)
+    private Unit unit;
+
 
 }
