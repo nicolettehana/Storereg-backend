@@ -1,5 +1,6 @@
 package sad.storereg.services.master;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,4 +68,28 @@ public class MasterDataServices {
 		}
     }
 
+	
+	public List<UnitRateDTO> getUnitsRatesByDate(LocalDate date) {
+		try {
+			int year = date.getYear();
+			YearRange yearRange = yearRangeRepository.findByStartYearLessThanEqualAndEndYearGreaterThanEqual(year, year).orElseThrow(()->new UnauthorizedException("Rate for year "+year+" has not been defined in master data"));
+
+			List<Rate> rates = rateRepository.findByYearRange_Id(yearRange.getId());
+					
+			// Map Rate entities to UnitRateDTO
+	        return rates.stream()
+	                .map(rate -> {
+	                    UnitRateDTO dto = new UnitRateDTO();
+	                    dto.setUnitId(rate.getUnit().getId());
+	                    dto.setUnitName(rate.getUnit().getUnit());
+	                    dto.setRate(rate.getRate());
+	                    dto.setItemId(rate.getItem().getId());
+	                    dto.setSubItemId(rate.getSubItem()!=null?rate.getSubItem().getId():null);
+	                    return dto;
+	                })
+	                .toList();
+			}catch(Exception ex) {
+			throw ex;
+		}
+    }
 }

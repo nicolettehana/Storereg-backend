@@ -33,6 +33,6 @@ public interface RateRepository extends JpaRepository<Rate, Long>{
 		        @Param("subItemId") Long subItemId,
 		        @Param("yearRangeId") Integer yearRangeId);
 
-
+	List<Rate> findByYearRange_Id(Integer yearRangeId);
 
 }
