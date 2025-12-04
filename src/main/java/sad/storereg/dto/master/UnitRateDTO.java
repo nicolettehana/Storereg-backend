@@ -10,4 +10,8 @@ public class UnitRateDTO {
 	private String unitName;
 	
 	private Double rate;
+	
+	private Long itemId;
+	
+	private Long subItemId;
 }

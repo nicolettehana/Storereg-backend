@@ -1,12 +1,14 @@
 package sad.storereg.controller.master;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -39,6 +41,17 @@ public class UnitController {
 	public List<UnitRateDTO> getUnitsRates(@RequestBody UnitRequestDTO request) throws IOException {
 		try {
 			return masterDataServices.getUnitsRates(request);
+		} catch (UnauthorizedException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			throw new InternalServerError("Unable to fetch units", ex);
+		}
+	}
+	
+	@GetMapping("/rates")
+	public List<UnitRateDTO> getUnitsRatess(@RequestParam LocalDate purchaseDate) throws IOException {
+		try {
+			return masterDataServices.getUnitsRatesByDate(purchaseDate);
 		} catch (UnauthorizedException ex) {
 			throw ex;
 		} catch (Exception ex) {
