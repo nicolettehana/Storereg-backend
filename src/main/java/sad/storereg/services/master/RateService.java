@@ -10,6 +10,7 @@ import sad.storereg.dto.master.ItemDTO;
 import sad.storereg.dto.master.ItemRateCreateDTO;
 import sad.storereg.dto.master.ItemRateDTO;
 import sad.storereg.dto.master.SubItemRateDTO;
+import sad.storereg.exception.ObjectNotFoundException;
 import sad.storereg.models.master.Rate;
 import sad.storereg.models.master.Category;
 import sad.storereg.models.master.Item;
@@ -358,5 +359,11 @@ public class RateService {
 
         rateRepository.save(itemRate);
 		return("Rate added");
+	}
+	
+	public Double getRate(Integer unitId, Long itemId, Long subItemId, Integer yearRangeId) {
+		
+		Rate rate = rateRepository.findRates(itemId, subItemId, yearRangeId, unitId).orElseThrow(() -> new ObjectNotFoundException("Rate not available"));
+		return rate.getRate();
 	}
 }

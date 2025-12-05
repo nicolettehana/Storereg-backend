@@ -14,4 +14,8 @@ public class UnitRateDTO {
 	private Long itemId;
 	
 	private Long subItemId;
+	
+	private String unit;
+	
+	private Integer balance;
 }

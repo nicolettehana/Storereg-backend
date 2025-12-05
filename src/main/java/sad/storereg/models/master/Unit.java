@@ -23,5 +23,7 @@ public class Unit {
 
 	@Column(nullable = false, unique = true)
 	private String unit;
+	
+	private String name;
 
 }

@@ -10,6 +10,7 @@ public class PurchaseResponseDTO {
 	
 	private Long purchaseId;
     private String firmName;
+    private String issuedTo;
     private List<ItemPurchaseDTO> items;
     private Double totalCost;
     private String remarks;

@@ -60,6 +60,7 @@ public class MasterDataServices {
 	                    dto.setUnitId(rate.getUnit().getId());
 	                    dto.setUnitName(rate.getUnit().getUnit());
 	                    dto.setRate(rate.getRate());
+	                    dto.setUnit(rate.getUnit().getName());
 	                    return dto;
 	                })
 	                .toList();
@@ -85,6 +86,8 @@ public class MasterDataServices {
 	                    dto.setRate(rate.getRate());
 	                    dto.setItemId(rate.getItem().getId());
 	                    dto.setSubItemId(rate.getSubItem()!=null?rate.getSubItem().getId():null);
+	                    dto.setUnit(rate.getUnit().getName());
+	                    dto.setBalance(2);
 	                    return dto;
 	                })
 	                .toList();

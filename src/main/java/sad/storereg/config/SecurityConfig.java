@@ -54,60 +54,10 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http.csrf().disable()
-		//http.csrf(csrf -> csrf
-		//	    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-		//	)
-//		http.csrf(csrf -> csrf
-//				.ignoringRequestMatchers("/auth/authenticate") 
-//			    .csrfTokenRepository(csrfTokenRepository())
-//			)
-//		http.csrf(csrf -> csrf
-//	            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // JS can read it
-//	            .ignoringRequestMatchers(
-//	                    // All POST endpoints
-//	                    "/users/change-password",
-//	                    "/users/update",
-//	                    "/users/verify-otp-update-mobile",
-//	                    "/users/send-otp-update-mobile",
-//	                    "/quarters",
-//	                    "/vacate/**",
-//	                    "/occupants/add",
-//	                    "/allotment/occupy",
-//	                    "/allotment/get-applicant-letter",
-//	                    "/vacate-request/accept",
-//	                    "/vacate-request/reject",
-//	                    "/occupants/add-quarter-occupant",
-//	                    "/application/upload-approval-order",
-//	                    "/eproposal-request",
-//	                    "/application",
-//	                    "/application/cancel",
-//	                    "/application/generate",
-//	                    "/application/upload",
-//	                    "/vacate-request",
-//	                    "/application/action",
-//	                    "/allotment/order",
-//	                    "/allotment/cancel",
-//	                    "/users/enable-disable/**",
-//	                    "/application/all",
-//	                    "/allotment/letter",
-//	                    "/allotment/completed",
-//	                    "/allotment/order-upload",
-//	                    "/allotment/order-final-upload",
-//	                    "/allotment/upload-decision-letter",
-//	                    "/vacate-doucment",
-//	                    "/vacate-document/upload**",
-//	                    "/auth/**",
-//	                    "/auth/authenticate" // optional login endpoint
-//	                )
-//	                // Add PUT if needed
-//	                .ignoringRequestMatchers(
-//	                    "/quarters/**",
-//	                    "/enable-disable/**"
-//	                )
-//	            )
+
 		.authorizeHttpRequests(auth -> auth .requestMatchers("/auth/**", "/csrf-token","/api/**","/my-report","/api2").permitAll() 
 				.requestMatchers(GET, "/users/get-user-info").hasAnyAuthority(USER.name(), ADMIN.name()) 
-				.requestMatchers(GET, "/menu","/status","/year-range","/items/**","/category/**","/firms/**","/unit/**","rates/**","/purchase/**") .hasAnyAuthority(ADMIN.name(), CH.name(), USER.name(), EST.name(), SAD.name()) 
+				.requestMatchers(GET, "/menu","/status","/year-range","/items/**","/category/**","/firms/**","/unit/**","rates/**","/purchase/**","/issue/**") .hasAnyAuthority(ADMIN.name(), CH.name(), USER.name(), EST.name(), SAD.name()) 
 				.requestMatchers(GET, "/users/profile") .hasAnyAuthority(ADMIN.name(), CH.name(), USER.name(), EST.name(), SAD.name()) 
 				.requestMatchers(POST, "/users/change-password","/users/update","/users/verify-otp-update-mobile","/users/send-otp-update-mobile","/verify-otp-login") .hasAnyAuthority(ADMIN.name(), CH.name(), USER.name(), EST.name()) 
 				.requestMatchers(POST, "/quarters","/vacate/**","/occupants/add","/allotment/occupy","/allotment/get-applicant-letter","/vacate-request/accept","/vacate-request/reject", "/occupants/add-quarter-occupant") .hasAnyAuthority(EST.name()) 
