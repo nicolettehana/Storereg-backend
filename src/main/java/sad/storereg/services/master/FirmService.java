@@ -1,10 +1,12 @@
 package sad.storereg.services.master;
 
 import java.util.List;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import sad.storereg.dto.master.CreateFirmDTO;
 import sad.storereg.dto.master.FirmYearDTO;
 import sad.storereg.dto.master.FirmsDTO;
+import sad.storereg.exception.UnauthorizedException;
 import sad.storereg.models.master.Category;
 import sad.storereg.models.master.Firm;
 import sad.storereg.models.master.FirmCategory;
@@ -229,6 +232,30 @@ public class FirmService {
         }
 
         return "Firm approved";
+    }
+    
+    public List<FirmsDTO> getFirmsListByDate(LocalDate date) {
+    	
+    	int year = date.getYear();
+    	List<Firm> firms = new ArrayList<>();
+//		Optional<YearRange> yearRange = yearRangeRepository.findByStartYearLessThanEqualAndEndYearGreaterThanEqual(year, year);
+//
+//		List<Firm> firms = new ArrayList<>();
+//		if(yearRange.isEmpty()) {
+//			firms = null;
+//			
+//		}
+//		else
+			firms = firmRepository.findAllByYear(year);
+
+			if (firms == null || firms.isEmpty()) {
+		        return List.of(); // return empty list instead of null
+		    }
+
+        // Convert to DTO
+        return firms.stream()
+                .map(this::convertToDto)
+                .toList();
     }
 
 }
