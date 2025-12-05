@@ -112,7 +112,7 @@ public class SecurityConfig {
 				.requestMatchers(POST, "/users/change-password","/users/update","/users/verify-otp-update-mobile","/users/send-otp-update-mobile","/verify-otp-login") .hasAnyAuthority(ADMIN.name(), CH.name(), USER.name(), EST.name()) 
 				.requestMatchers(POST, "/quarters","/vacate/**","/occupants/add","/allotment/occupy","/allotment/get-applicant-letter","/vacate-request/accept","/vacate-request/reject", "/occupants/add-quarter-occupant") .hasAnyAuthority(EST.name()) 
 				.requestMatchers(PUT, "/quarters/**","/enable-disable/**") .hasAnyAuthority(EST.name()) 
-				.requestMatchers(POST, "/firms/**","/items","/rates").hasAnyAuthority(SAD.name())
+				.requestMatchers(POST, "/firms/**","/items","/rates","/purchase/create").hasAnyAuthority(SAD.name())
 				.requestMatchers(GET, "/vacate-request/pending/**","/vacate-request/completed/**","/vacate-request/stats","/quarter-occupancy-status/**", "/quarters/full-details/**") .hasAnyAuthority(EST.name()) 
 				.requestMatchers(POST, "/application/upload-approval-order") .hasAnyAuthority(CH.name()) 
 				.requestMatchers(POST,"/eproposal-request","/eproposal-insert-allotment-status").hasAnyAuthority(USER.name(), CH.name()) 

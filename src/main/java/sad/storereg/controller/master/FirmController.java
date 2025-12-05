@@ -1,5 +1,6 @@
 package sad.storereg.controller.master;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -51,10 +52,14 @@ public class FirmController {
     }
     
     @GetMapping({ "/list" })
-    public List<FirmsDTO> getListFirms(
+    public List<FirmsDTO> getListFirms(@RequestParam(defaultValue = "") LocalDate date
     ) {
-
-        return firmService.getFirmsList();
+    	System.out.println("Date: "+date);
+    	if(date!=null) 
+    	
+    		return firmService.getFirmsListByDate(date);
+    	else
+    		return firmService.getFirmsList();
     }
     
     @PostMapping("/add-approved")
@@ -62,5 +67,7 @@ public class FirmController {
     	
         return ResponseEntity.ok(firmService.createFirmYear(request));
     }
+    
+    
 
 }
