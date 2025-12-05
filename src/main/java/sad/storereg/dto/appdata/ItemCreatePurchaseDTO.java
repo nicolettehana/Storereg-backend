@@ -6,10 +6,10 @@ import lombok.Data;
 public class ItemCreatePurchaseDTO {
 
 	private String categoryCode;
-    private String itemId;
-    private String subItemId;
-    private String unitId;
-    private String quantity;
-    private String rate;
-    private String amount;
+    private Long itemId;
+    private Long subItemId;
+    private Integer unitId;
+    private Integer quantity;
+    private Double rate;
+    private Double amount;
 }

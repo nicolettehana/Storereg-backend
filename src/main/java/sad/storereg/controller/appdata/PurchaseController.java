@@ -49,6 +49,6 @@ public class PurchaseController {
 
 	        // You can process & save this data however you need.
 
-	        return ResponseEntity.ok("Purchase data received successfully!");
+	        return ResponseEntity.ok(purchaseService.savePurchase(purchaseDTO));
 	    }
 }
