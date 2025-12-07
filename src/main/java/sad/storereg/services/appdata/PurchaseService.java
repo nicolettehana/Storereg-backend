@@ -87,6 +87,7 @@ public class PurchaseService {
 	        // Set category (all grouped items have the same category)
 	        String category = entry.getValue().get(0).getItem().getCategory().getName();
 	        itemDTO.setCategory(category);
+	        itemDTO.setCategoryCode( entry.getValue().get(0).getItem().getCategory().getCode());
 
 	        List<SubItemPurchaseDTO> subItems = entry.getValue()
 	                .stream()

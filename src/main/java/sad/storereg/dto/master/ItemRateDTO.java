@@ -15,6 +15,7 @@ public class ItemRateDTO {
 	private Long id;
     private String name;
     private String category;
+    private String categoryCode;
     private Integer startYear;
     private Integer endYear;
 

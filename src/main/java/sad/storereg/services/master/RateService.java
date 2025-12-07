@@ -76,8 +76,10 @@ public class RateService {
                         item.getId(),
                         item.getName(),
                         item.getCategory().getName(),
+                        item.getCategory().getCode(),
                         rate.getYearRange().getStartYear(),
                         rate.getYearRange().getEndYear(),
+                        
                         null, null,
                         new ArrayList<>()
                     )
@@ -100,6 +102,7 @@ public class RateService {
                         item.getId(),
                         item.getName(),
                         item.getCategory().getName(),
+                        item.getCategory().getCode(),
                         rate.getYearRange().getStartYear(),
                         rate.getYearRange().getEndYear(),
                         null, null,

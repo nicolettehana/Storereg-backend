@@ -42,14 +42,8 @@ public class IssueController {
 	@PostMapping("/create")
     public ResponseEntity<String> saveIssue(@RequestBody PurchaseCreateDTO purchaseDTO) {
 
-        // Debug print - remove in production
-        System.out.println("Received Issue:");
-        System.out.println(purchaseDTO);
         return ResponseEntity.ok(issueService.saveIssue(purchaseDTO));
 
-        // You can process & save this data however you need.
-
-        //return ResponseEntity.ok(purchaseService.savePurchase(purchaseDTO));
     }
 
 }

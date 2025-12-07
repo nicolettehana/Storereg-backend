@@ -14,5 +14,6 @@ public class ItemPurchaseDTO {
     private Double amount;
     private String unit;
     private String category;
+    private String categoryCode;
 
 }
