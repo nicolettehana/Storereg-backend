@@ -1,5 +1,6 @@
 package sad.storereg.services.master;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,6 +16,7 @@ import sad.storereg.models.master.Item;
 import sad.storereg.models.master.SubItems;
 import sad.storereg.repo.master.CategoryRepository;
 import sad.storereg.repo.master.ItemRepository;
+import sad.storereg.services.appdata.PurchaseService;
 
 @Service
 @RequiredArgsConstructor
@@ -22,11 +24,28 @@ public class ItemService {
 
 	private final ItemRepository itemRepository;
 	private final CategoryRepository categoryRepository;
+	private final PurchaseService purchaseService;
 
     public Page<Item> getItems(Pageable pageable, String search, String category) {
+    	Page<Item> page;
     	if(category==null || category.equals("") || category.equals("All"))
-    		return itemRepository.findAll(pageable);
-    	else return itemRepository.findAllByCategory_Code(category, pageable);
+    		page = itemRepository.findAll(pageable);
+    	else page = itemRepository.findAllByCategory_Code(category, pageable);
+    	
+    	//page.forEach(item -> item.setBalance(purchaseService.getAvailableBalance(item.getId(),item.getSubItems()==null?null:item.getSubItems().getId(), rate.getUnit().getId(), issueDate==null?LocalDate.now():null)));
+
+    	page.forEach(item -> {
+    		if (item.getSubItems() != null) {
+                item.getSubItems().forEach(subItem -> {
+                    subItem.setBalance(purchaseService.getAvailableBalanceAllUnits(item.getId(),item.getSubItems().size()==0?null:subItem.getId(),LocalDate.now())); 
+                });
+            }
+            if(item.getSubItems().size()==0) {
+            	item.setBalance(purchaseService.getAvailableBalanceAllUnits(item.getId(),null,LocalDate.now()));
+            };
+        });
+    	
+        return page;
     }
     
     public List<Item> getItemsList(String search, String category) {

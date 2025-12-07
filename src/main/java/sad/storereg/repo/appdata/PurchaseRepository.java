@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import sad.storereg.models.appdata.Purchase;
 
@@ -62,5 +63,83 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
             String searchValue,
             Pageable pageable
     );
+	
+	@Query(
+	        value = """
+	        SELECT 
+	            COALESCE((
+	                SELECT SUM(pi.quantity)
+	                FROM appdata.purchase_items pi
+	                JOIN appdata.purchase p ON p.id = pi.purchase_id
+	                WHERE pi.item_id = :itemId
+	                  AND COALESCE(pi.sub_item_id, -1) = COALESCE(:subItemId, -1)
+	                  AND pi.unit_id = :unitId
+	                  AND p.date <= :issueDate
+	            ), 0)
+	            -
+	            COALESCE((
+	                SELECT SUM(ii.quantity)
+	                FROM appdata.issue_items ii
+	                JOIN appdata.issue i ON i.id = ii.issue_id
+	                WHERE ii.item_id = :itemId
+	                  AND COALESCE(ii.sub_item_id, -1) = COALESCE(:subItemId, -1)
+	                  AND ii.unit_id = :unitId
+	                  AND i.date <= :issueDate
+	            ), 0)
+	        AS availableStock
+	        """,
+	        nativeQuery = true
+	    )
+	    Integer getAvailableStock(
+	        @Param("itemId") Long itemId,
+	        @Param("subItemId") Long subItemId,
+	        @Param("unitId") Integer unitId,
+	        @Param("issueDate") LocalDate issueDate
+	    );
+	
+	@Query(
+		    value = """
+		        SELECT 
+		            u.id AS unitId,
+		            u.name AS unitName,
+		            COALESCE((
+		                SELECT SUM(pi.quantity)
+		                FROM appdata.purchase_items pi
+		                JOIN appdata.purchase p ON p.id = pi.purchase_id
+		                WHERE pi.item_id = :itemId
+		                  AND COALESCE(pi.sub_item_id, -1) = COALESCE(:subItemId, -1)
+		                  AND pi.unit_id = u.id
+		                  AND p.date <= :issueDate
+		            ), 0)
+		            -
+		            COALESCE((
+		                SELECT SUM(ii.quantity)
+		                FROM appdata.issue_items ii
+		                JOIN appdata.issue i ON i.id = ii.issue_id
+		                WHERE ii.item_id = :itemId
+		                  AND COALESCE(ii.sub_item_id, -1) = COALESCE(:subItemId, -1)
+		                  AND ii.unit_id = u.id
+		                  AND i.date <= :issueDate
+		            ), 0)
+		        AS availableStock
+		        FROM master.units u
+		        WHERE u.id IN (
+		            SELECT DISTINCT unit_id 
+		            FROM appdata.purchase_items 
+		            WHERE item_id = :itemId AND COALESCE(sub_item_id, -1) = COALESCE(:subItemId, -1)
+		            UNION
+		            SELECT DISTINCT unit_id
+		            FROM appdata.issue_items 
+		            WHERE item_id = :itemId AND COALESCE(sub_item_id, -1) = COALESCE(:subItemId, -1)
+		        )
+		        ORDER BY u.id
+		        """,
+		    nativeQuery = true
+		)
+		List<Object[]> getAvailableStockForAllUnits(
+		    @Param("itemId") Long itemId,
+		    @Param("subItemId") Long subItemId,
+		    @Param("issueDate") LocalDate issueDate
+		);
 
 }

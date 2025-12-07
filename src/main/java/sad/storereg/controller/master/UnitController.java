@@ -58,4 +58,15 @@ public class UnitController {
 			throw new InternalServerError("Unable to fetch units", ex);
 		}
 	}
+	
+	@GetMapping("/balance")
+	public List<UnitRateDTO> getUnitsBalance(@RequestParam(required = false) LocalDate issueDate) throws IOException {
+		try {
+			return masterDataServices.getUnitsBalance(issueDate);
+		} catch (UnauthorizedException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			throw new InternalServerError("Unable to fetch units", ex);
+		}
+	}
 }

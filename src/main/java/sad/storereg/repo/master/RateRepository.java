@@ -25,6 +25,10 @@ public interface RateRepository extends JpaRepository<Rate, Long>{
 	        Long itemId, Long subItemId,
 	        Integer yearRangeId
 	);
+	Optional<Rate> findByItem_IdAndSubItem_IdAndYearRange_IdAndUnit_Id(
+	        Long itemId, Long subItemId,
+	        Integer yearRangeId, Integer unitId
+	);
 	@Query("SELECT r FROM Rate r WHERE r.item.id = :itemId " +
 		       "AND ((:subItemId IS NULL AND r.subItem IS NULL) OR r.subItem.id = :subItemId) " +
 		       "AND r.yearRange.id = :yearRangeId")

@@ -64,5 +64,8 @@ public class Item {
     
     @Transient
     private Double rate;
+    
+    @Transient
+    private String balance;
 
 }

@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Data;
 
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -25,5 +26,8 @@ public class Unit {
 	private String unit;
 	
 	private String name;
+	
+	@Transient
+	private Integer balance;
 
 }

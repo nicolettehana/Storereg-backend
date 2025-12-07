@@ -46,5 +46,8 @@ public class SubItems {
     
     @Transient
     private Double rate;
+    
+    @Transient
+    private String balance;
 
 }

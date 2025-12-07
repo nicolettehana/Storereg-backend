@@ -12,6 +12,8 @@ public class PurchaseCreateDTO {
     private LocalDate purchaseDate;
     private Long firmId;
     private Double totalCost;
+    private LocalDate issueDate;
+    private String issueTo;
 
     private List<ItemCreatePurchaseDTO> items;
 

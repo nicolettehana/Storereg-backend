@@ -336,7 +336,7 @@ public class RateService {
         		throw new RuntimeException("Rate already present");
         }
         else {
-        	if(rateRepository.findByItem_IdAndSubItem_IdAndYearRange_Id(request.getItemId(), request.getSubItemId(), request.getYearRangeId()).isPresent())
+        	if(rateRepository.findByItem_IdAndSubItem_IdAndYearRange_IdAndUnit_Id(request.getItemId(), request.getSubItemId(), request.getYearRangeId(), request.getUnitId()).isPresent())
 				throw new RuntimeException("Rate already present");
         }
         

@@ -18,6 +18,7 @@ import sad.storereg.repo.master.CategoryRepository;
 import sad.storereg.repo.master.RateRepository;
 import sad.storereg.repo.master.UnitRepository;
 import sad.storereg.repo.master.YearRangeRepository;
+import sad.storereg.services.appdata.PurchaseService;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +31,8 @@ public class MasterDataServices {
 	private final RateRepository rateRepository;
 	
 	private final YearRangeRepository yearRangeRepository;
+	
+	private final PurchaseService purchaseService;
 	
 	public List<Category> getCategories() {
 		try {
@@ -87,7 +90,29 @@ public class MasterDataServices {
 	                    dto.setItemId(rate.getItem().getId());
 	                    dto.setSubItemId(rate.getSubItem()!=null?rate.getSubItem().getId():null);
 	                    dto.setUnit(rate.getUnit().getName());
-	                    dto.setBalance(2);
+	                    //dto.setBalance(purchaseService.getAvailableBalance(rate.getItem().getId(), rate.getSubItem()==null?null:rate.getSubItem().getId(), rate.getUnit().getId(), date));
+	                    return dto;
+	                })
+	                .toList();
+			}catch(Exception ex) {
+			throw ex;
+		}
+    }
+	
+	public List<UnitRateDTO> getUnitsBalance(LocalDate issueDate) {
+		try {
+			List<Rate> rates = rateRepository.findAll();
+					
+			// Map Rate entities to UnitRateDTO
+	        return rates.stream()
+	                .map(rate -> {
+	                    UnitRateDTO dto = new UnitRateDTO();
+	                    dto.setUnitId(rate.getUnit().getId());
+	                    dto.setUnitName(rate.getUnit().getUnit());
+	                    dto.setItemId(rate.getItem().getId());
+	                    dto.setSubItemId(rate.getSubItem()!=null?rate.getSubItem().getId():null);
+	                    dto.setUnit(rate.getUnit().getName());
+	                    dto.setBalance(purchaseService.getAvailableBalance(rate.getItem().getId(), rate.getSubItem()==null?null:rate.getSubItem().getId(), rate.getUnit().getId(), issueDate==null?LocalDate.now():null));
 	                    return dto;
 	                })
 	                .toList();

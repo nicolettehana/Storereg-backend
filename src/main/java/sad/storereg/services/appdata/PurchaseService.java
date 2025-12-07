@@ -185,5 +185,22 @@ public class PurchaseService {
          purchaseRepository.save(purchase);
          return "Purchase added";
     }
-
+	
+	public int getAvailableBalance(Long itemId, Long subItemId, Integer unitId, LocalDate date) {
+		Integer availableStock = purchaseRepository.getAvailableStock(itemId, subItemId, unitId, date);
+		//System.out.println("ItemID: "+itemId+" subItemId: "+subItemId+" unitId: "+unitId+" date: "+date+" available stock: "+availableStock);
+	    return availableStock;
 	}
+	
+	public String getAvailableBalanceAllUnits(Long itemId, Long subItemId, LocalDate date) {
+		List<Object[]> availableStock = purchaseRepository.getAvailableStockForAllUnits(itemId, subItemId, date);
+		
+		String totalStock = availableStock.stream()
+		        .map(r -> ((Number) r[2]).intValue() + " " + r[1])   // balance + unitName
+		        .collect(Collectors.joining(", "));
+
+		//System.out.println("ItemID: "+itemId+" subItemId: "+subItemId+" unitId: "+unitId+" date: "+date+" available stock: "+availableStock);
+	    return totalStock;
+	}
+
+}

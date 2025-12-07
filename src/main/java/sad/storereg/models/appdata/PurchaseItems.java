@@ -51,5 +51,4 @@ public class PurchaseItems {
     @JoinColumn(name = "unit_id", nullable = false)
     private Unit unit;
 
-
 }

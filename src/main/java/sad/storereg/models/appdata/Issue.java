@@ -2,8 +2,10 @@ package sad.storereg.models.appdata;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -37,6 +39,6 @@ public class Issue {
     @Column(nullable = false)
     private LocalDateTime entrydate;
 
-    @OneToMany(mappedBy = "issue", fetch = FetchType.LAZY)
-    private List<IssueItem> items;
+    @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<IssueItem> items = new ArrayList<>();
 }

@@ -52,5 +52,4 @@ public class IssueItem {
     @JoinColumn(name = "issue_id", nullable = false)
     private Issue issue;
 
-
 }
