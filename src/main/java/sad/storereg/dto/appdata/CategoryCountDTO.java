@@ -11,6 +11,8 @@ public class CategoryCountDTO {
 	
 	private String category;
 	
+	private String categoryCode;
+	
     private Long totalFirms;
 
 }

@@ -18,19 +18,23 @@ public interface ItemRepository extends JpaRepository<Item, Long>{
 	List<Item> findAllByCategory_Code(String category);
 	
 	@Query("""
-	        SELECT new sad.storereg.dto.appdata.CategoryCountDTO(
-	            i.category.name,
-	             SUM(
-            CASE 
-                WHEN size(i.subItems) = 0 THEN 1      
-                ELSE size(i.subItems)                
-            END
-        )
-	        )
-	        FROM Item i
-	        GROUP BY i.category.name
-	    """)
-	    List<CategoryCountDTO> getCategoryCounts();
+		    SELECT new sad.storereg.dto.appdata.CategoryCountDTO(
+		        i.category.name,
+		        i.category.code,
+		        SUM(
+		            CASE 
+		                WHEN SIZE(i.subItems) = 0 THEN 1
+		                ELSE SIZE(i.subItems)
+		            END
+		        )
+		    )
+		    FROM Item i
+		    GROUP BY i.category.name, i.category.code
+		    ORDER BY i.category.name ASC
+		""")
+		List<CategoryCountDTO> getCategoryCounts();
+
+
 	
 	@Query("""
 		    SELECT SUM(

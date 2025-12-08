@@ -17,9 +17,15 @@ public interface FirmCategoryRepository extends JpaRepository<FirmCategory, Long
 	long count();
 	
 	@Query("""
-	        SELECT new sad.storereg.dto.appdata.CategoryCountDTO(fc.category.name, COUNT(fc.firm))
-	        FROM FirmCategory fc
-	        GROUP BY fc.category.name
-	    """)
-	    List<CategoryCountDTO> countFirmsPerCategory();
+		    SELECT new sad.storereg.dto.appdata.CategoryCountDTO(
+		        fc.category.name,
+		        fc.category.code,
+		        COUNT(fc.firm)
+		    )
+		    FROM FirmCategory fc
+		    GROUP BY fc.category.name, fc.category.code
+		    ORDER BY fc.category.name ASC
+		""")
+		List<CategoryCountDTO> countFirmsPerCategory();
+
 }
