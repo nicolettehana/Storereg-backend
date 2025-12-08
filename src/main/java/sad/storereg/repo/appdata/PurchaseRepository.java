@@ -141,5 +141,46 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 		    @Param("subItemId") Long subItemId,
 		    @Param("issueDate") LocalDate issueDate
 		);
+		
+		@Query("""
+			    SELECT pi.unit.id, SUM(pi.quantity)
+			    FROM PurchaseItems pi
+			    JOIN pi.purchase p
+			    WHERE pi.item.id = :itemId
+			      AND (:subItemId IS NULL OR pi.subItem.id = :subItemId)
+			      AND p.date > :fromDate AND p.date <= :toDate
+			    GROUP BY pi.unit.id
+			""")
+			List<Object[]> getPurchasedAfter(
+			        @Param("itemId") Long itemId,
+			        @Param("subItemId") Long subItemId,
+			        @Param("fromDate") LocalDate fromDate,
+			        @Param("toDate") LocalDate toDate
+			);
+
+			
+			@Query("""
+				    SELECT COALESCE(SUM(pi.quantity), 0)
+				    FROM PurchaseItems pi
+				    JOIN pi.purchase p
+				    WHERE pi.item.id = :itemId
+				      AND (:subItemId IS NULL OR pi.subItem.id = :subItemId)
+				      AND p.date > :fromDate
+				      AND p.date <= :toDate
+				""")
+				int sumPurchasedAfter(Long itemId, Long subItemId, LocalDate fromDate, LocalDate toDate);
+
+
+			@Query("""
+				    SELECT pi.item.category.name,
+				           pi.item.category.code,
+				           SUM(pi.amount)
+				    FROM PurchaseItems pi
+				    WHERE pi.purchase.date BETWEEN :fromDate AND :toDate
+				    GROUP BY pi.item.category.name, pi.item.category.code
+				""")
+				List<Object[]> getCategoryTotals(
+				        @Param("fromDate") LocalDate fromDate,
+				        @Param("toDate") LocalDate toDate);
 
 }

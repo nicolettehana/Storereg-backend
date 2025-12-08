@@ -1,12 +1,14 @@
 package sad.storereg.repo.appdata;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import sad.storereg.models.appdata.Issue;
 
@@ -30,5 +32,34 @@ public interface IssueRepository extends JpaRepository<Issue, Long>{
 	        String searchValue,
 	        Pageable pageable
 	);
+	
+	@Query("""
+		    SELECT ii.unit.id, SUM(ii.quantity)
+		    FROM IssueItem ii
+		    JOIN ii.issue i
+		    WHERE ii.item.id = :itemId
+		      AND (:subItemId IS NULL OR ii.subItem.id = :subItemId)
+		      AND i.date > :fromDate AND i.date <= :toDate
+		    GROUP BY ii.unit.id
+		""")
+		List<Object[]> getIssuedAfter(
+		        @Param("itemId") Long itemId,
+		        @Param("subItemId") Long subItemId,
+		        @Param("fromDate") LocalDate fromDate,
+		        @Param("toDate") LocalDate toDate
+		);
+		
+		@Query("""
+			    SELECT COALESCE(SUM(ii.quantity), 0)
+			    FROM IssueItem ii
+			    JOIN ii.issue i
+			    WHERE ii.item.id = :itemId
+			      AND (:subItemId IS NULL OR ii.subItem.id = :subItemId)
+			      AND i.date > :fromDate
+			      AND i.date <= :toDate
+			""")
+			int sumIssuedAfter(Long itemId, Long subItemId, LocalDate fromDate, LocalDate toDate);
+
+
 
 }

@@ -1,6 +1,7 @@
 package sad.storereg.controller.appdata;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,12 +44,14 @@ public class PurchaseController {
 	 @PostMapping("/create")
 	    public ResponseEntity<String> savePurchase(@RequestBody PurchaseCreateDTO purchaseDTO) {
 
-	        // Debug print - remove in production
-	        System.out.println("Received Purchase:");
-	        System.out.println(purchaseDTO);
-
-	        // You can process & save this data however you need.
-
 	        return ResponseEntity.ok(purchaseService.savePurchase(purchaseDTO));
+	    }
+	 
+	 @GetMapping("/year/{year}")
+	    public ResponseEntity<Map<String, Object>> getFinancialYearReport(
+	            @PathVariable int year) {
+
+	        Map<String, Object> response = purchaseService.getFinancialYearReport(year);
+	        return ResponseEntity.ok(response);
 	    }
 }

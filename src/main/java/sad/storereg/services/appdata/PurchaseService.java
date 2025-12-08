@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -203,5 +204,38 @@ public class PurchaseService {
 		//System.out.println("ItemID: "+itemId+" subItemId: "+subItemId+" unitId: "+unitId+" date: "+date+" available stock: "+availableStock);
 	    return totalStock;
 	}
+	
+	public Map<String, Object> getFinancialYearReport(int year) {
+
+	    LocalDate fromDate = LocalDate.of(year, 4, 1);
+	    LocalDate toDate   = LocalDate.of(year + 1, 3, 31);
+
+	    List<Object[]> results = purchaseRepository.getCategoryTotals(fromDate, toDate);
+
+	    double total = 0;
+	    List<Map<String, Object>> categories = new ArrayList<>();
+
+	    for (Object[] row : results) {
+	        String category      = (String) row[0];
+	        String categoryCode  = (String) row[1];
+	        Double amount        = (Double) row[2];
+
+	        total += amount;
+
+	        Map<String, Object> map = new HashMap<>();
+	        map.put("category", category);
+	        map.put("categoryCode", categoryCode);
+	        map.put("value", amount);
+
+	        categories.add(map);
+	    }
+
+	    Map<String, Object> response = new HashMap<>();
+	    response.put("total", total);
+	    response.put("categories", categories);
+
+	    return response;
+	}
+
 
 }
