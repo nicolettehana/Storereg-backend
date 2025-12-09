@@ -51,5 +51,4 @@ public class IssueItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "issue_id", nullable = false)
     private Issue issue;
-
 }

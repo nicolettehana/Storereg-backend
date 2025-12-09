@@ -60,6 +60,30 @@ public interface IssueRepository extends JpaRepository<Issue, Long>{
 			""")
 			int sumIssuedAfter(Long itemId, Long subItemId, LocalDate fromDate, LocalDate toDate);
 
+		@Query("""
+		        SELECT COALESCE(SUM(ii.quantity),0)
+		        FROM IssueItem ii
+		        WHERE ii.item.id = :itemId
+		          AND ((:subItemId IS NULL AND ii.subItem IS NULL) OR ii.subItem.id = :subItemId)
+		          AND ii.unit.id = :unitId
+		          AND ii.issue.date BETWEEN :startDate AND :endDate
+		    """)
+		    Integer sumQtyByItemSubItemUnitBetween(@Param("itemId") Long itemId,
+		                                          @Param("subItemId") Long subItemId,
+		                                          @Param("unitId") Integer unitId,
+		                                          @Param("startDate") LocalDate startDate,
+		                                          @Param("endDate") LocalDate endDate);
 
-
+		    @Query("""
+		        SELECT COALESCE(SUM(ii.quantity),0)
+		        FROM IssueItem ii
+		        WHERE ii.item.id = :itemId
+		          AND ((:subItemId IS NULL AND ii.subItem IS NULL) OR ii.subItem.id = :subItemId)
+		          AND ii.unit.id = :unitId
+		          AND ii.issue.date <= :endDate
+		    """)
+		    Integer sumQtyByItemSubItemUnitUntil(@Param("itemId") Long itemId,
+		                                        @Param("subItemId") Long subItemId,
+		                                        @Param("unitId") Integer unitId,
+		                                        @Param("endDate") LocalDate endDate);
 }

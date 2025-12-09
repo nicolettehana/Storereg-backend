@@ -169,8 +169,7 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 				      AND p.date <= :toDate
 				""")
 				int sumPurchasedAfter(Long itemId, Long subItemId, LocalDate fromDate, LocalDate toDate);
-
-
+			
 			@Query("""
 				    SELECT pi.item.category.name,
 				           pi.item.category.code,
@@ -183,4 +182,31 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 				        @Param("fromDate") LocalDate fromDate,
 				        @Param("toDate") LocalDate toDate);
 
+
+			@Query("""
+			        SELECT COALESCE(SUM(pi.quantity),0)
+			        FROM PurchaseItems pi
+			        WHERE pi.item.id = :itemId
+			          AND ((:subItemId IS NULL AND pi.subItem IS NULL) OR pi.subItem.id = :subItemId)
+			          AND pi.unit.id = :unitId
+			          AND pi.purchase.date BETWEEN :startDate AND :endDate
+			    """)
+			    Integer sumQtyByItemSubItemUnitBetween(@Param("itemId") Long itemId,
+			                                           @Param("subItemId") Long subItemId,
+			                                           @Param("unitId") Integer unitId,
+			                                           @Param("startDate") LocalDate startDate,
+			                                           @Param("endDate") LocalDate endDate);
+
+			    @Query("""
+			        SELECT COALESCE(SUM(pi.quantity),0)
+			        FROM PurchaseItems pi
+			        WHERE pi.item.id = :itemId
+			          AND ((:subItemId IS NULL AND pi.subItem IS NULL) OR pi.subItem.id = :subItemId)
+			          AND pi.unit.id = :unitId
+			          AND pi.purchase.date <= :endDate
+			    """)
+			    Integer sumQtyByItemSubItemUnitUntil(@Param("itemId") Long itemId,
+			                                         @Param("subItemId") Long subItemId,
+			                                         @Param("unitId") Integer unitId,
+			                                         @Param("endDate") LocalDate endDate);
 }
