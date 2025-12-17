@@ -2,7 +2,10 @@ package sad.storereg.controller.master;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,6 +23,13 @@ public class YearRangeController {
     @GetMapping
     public List<YearRange> getAllYearRanges() {
         return yearRangeService.getAllYearRanges();
+    }
+    
+    @PostMapping
+    public ResponseEntity<?> createYearRange(@RequestBody YearRange request) {
+		System.out.println("Hey: "+request);
+        return ResponseEntity.ok(yearRangeService.createYearRange(request));
+		//return ResponseEntity.ok("ok");
     }
 
 }

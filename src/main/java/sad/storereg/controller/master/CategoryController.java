@@ -5,8 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,6 +20,7 @@ import sad.storereg.exception.InternalServerError;
 import sad.storereg.exception.UnauthorizedException;
 import sad.storereg.models.auth.User;
 import sad.storereg.models.master.Category;
+import sad.storereg.models.master.YearRange;
 import sad.storereg.repo.master.CategoryRepository;
 import sad.storereg.repo.master.FirmCategoryRepository;
 import sad.storereg.repo.master.FirmsRepository;
@@ -50,6 +54,19 @@ public class CategoryController {
         response.put("byCategory", firmCategoryRepo.countFirmsPerCategory());
 
         return response;
+    }
+	
+	@PostMapping
+    public ResponseEntity<?> createCategory(@RequestBody Category request) {
+		try {
+			return ResponseEntity.ok(masterDataServices.createCategory(request));
+			//return ResponseEntity.ok("ok");
+		} catch (UnauthorizedException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			throw new InternalServerError("Unable to add category", ex);
+		}
+        
     }
 
 }

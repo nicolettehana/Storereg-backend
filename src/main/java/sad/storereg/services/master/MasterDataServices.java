@@ -1,6 +1,7 @@
 package sad.storereg.services.master;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import sad.storereg.dto.master.UnitRateDTO;
 import sad.storereg.dto.master.UnitRequestDTO;
+import sad.storereg.exception.InternalServerError;
 import sad.storereg.exception.UnauthorizedException;
 import sad.storereg.models.master.Category;
 import sad.storereg.models.master.Rate;
@@ -117,6 +119,20 @@ public class MasterDataServices {
 	                })
 	                .toList();
 			}catch(Exception ex) {
+			throw ex;
+		}
+    }
+	
+	public String createCategory(Category request) {
+		try {
+			if(categoryRepo.findByCodeOrName(request.getCode(), request.getName()).isPresent())
+				throw new UnauthorizedException("Category/Code exists");
+    	Category category  = new Category();
+    	category.setName(request.getName());
+    	category.setCode(request.getCode());
+    	categoryRepo.save(category);
+    	return "Added successfully";
+		}catch(Exception ex) {
 			throw ex;
 		}
     }
