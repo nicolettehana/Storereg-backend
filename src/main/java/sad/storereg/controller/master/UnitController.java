@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +18,7 @@ import sad.storereg.dto.master.UnitRequestDTO;
 import sad.storereg.exception.InternalServerError;
 import sad.storereg.exception.UnauthorizedException;
 import sad.storereg.models.master.Unit;
+import sad.storereg.models.master.YearRange;
 import sad.storereg.services.master.MasterDataServices;
 
 @RestController
@@ -69,4 +71,10 @@ public class UnitController {
 			throw new InternalServerError("Unable to fetch units", ex);
 		}
 	}
+	
+	@PostMapping
+    public ResponseEntity<?> createUnit(@RequestBody Unit request) {
+        return ResponseEntity.ok(masterDataServices.createUnit(request));
+		//return ResponseEntity.ok("ok");
+    }
 }

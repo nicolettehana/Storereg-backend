@@ -127,11 +127,25 @@ public class MasterDataServices {
 		try {
 			if(categoryRepo.findByCodeOrName(request.getCode(), request.getName()).isPresent())
 				throw new UnauthorizedException("Category/Code exists");
-    	Category category  = new Category();
-    	category.setName(request.getName());
-    	category.setCode(request.getCode());
-    	categoryRepo.save(category);
-    	return "Added successfully";
+	    	Category category  = new Category();
+	    	category.setName(request.getName());
+	    	category.setCode(request.getCode());
+	    	categoryRepo.save(category);
+	    	return "Added successfully";
+		}catch(Exception ex) {
+			throw ex;
+		}
+    }
+	
+	public String createUnit(Unit request) {
+		try {
+			if(unitRepo.findByUnitOrName(request.getUnit(), request.getName()).isPresent())
+				throw new UnauthorizedException("Unit exists");
+	    	Unit unit  = new Unit();
+	    	unit.setName(request.getName());
+	    	unit.setUnit(request.getUnit());
+	    	unitRepo.save(unit);
+	    	return "Added successfully";
 		}catch(Exception ex) {
 			throw ex;
 		}

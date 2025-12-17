@@ -27,7 +27,6 @@ public class YearRangeController {
     
     @PostMapping
     public ResponseEntity<?> createYearRange(@RequestBody YearRange request) {
-		System.out.println("Hey: "+request);
         return ResponseEntity.ok(yearRangeService.createYearRange(request));
 		//return ResponseEntity.ok("ok");
     }
