@@ -6,12 +6,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import sad.storereg.dto.appdata.CategoryCountDTO;
 import sad.storereg.models.master.Item;
 import sad.storereg.models.master.Quarters;
 
 public interface ItemRepository extends JpaRepository<Item, Long>{
+	
+	Page<Item> findAll(Pageable pageable);
 	
 	Page<Item> findAllByCategory_Code(String category, Pageable pageable);
 	
@@ -47,5 +50,15 @@ public interface ItemRepository extends JpaRepository<Item, Long>{
 		""")
 		Long getAbsoluteTotal();
 
-
+	@Query("""
+		    select distinct r.id
+		    from Item r
+		    where 
+		      (:categoryCode is null or r.category.code = :categoryCode)
+		    order by r.id
+		""")
+		Page<Long> findDistinctItemIds(
+		    @Param("categoryCode") String categoryCode,
+		    Pageable pageable
+		);
 }

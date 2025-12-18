@@ -5,11 +5,15 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import sad.storereg.models.master.Item;
 import sad.storereg.models.master.Rate;
+import sad.storereg.models.master.SubItems;
+import sad.storereg.models.master.YearRange;
 
 public interface RateRepository extends JpaRepository<Rate, Long>{
 	
@@ -17,9 +21,9 @@ public interface RateRepository extends JpaRepository<Rate, Long>{
 	Page<Rate> findByCategory_Code(String code, Pageable pageable);
 	Page<Rate> findByCategory_CodeAndYearRange_Id(String code, Integer yearRangeId, Pageable pageable);
 	//Optional<Rate> findByObjectTypeAndObjectIdAndYearRange_Id(String objectType, Long objectId, Integer yearRangeId);
-	Optional<Rate> findByItem_IdAndSubItemIsNullAndYearRange_Id(
+	Optional<Rate> findByItem_IdAndSubItemIsNullAndYearRange_IdAndUnit_Id(
 	        Long itemId,
-	        Integer yearRangeId
+	        Integer yearRangeId, Integer unitId
 	);
 	Optional<Rate> findByItem_IdAndSubItem_IdAndYearRange_Id(
 	        Long itemId, Long subItemId,
@@ -47,5 +51,27 @@ public interface RateRepository extends JpaRepository<Rate, Long>{
 		        @Param("subItemId") Long subItemId,
 		        @Param("yearRangeId") Integer yearRangeId,
 		        @Param("unitId") Integer unitId);
+	
+	@Query("""
+		    select distinct r.item.id
+		    from Rate r
+		    where (:yearRangeId is null or r.yearRange.id = :yearRangeId)
+		      and (:categoryCode is null or r.category.code = :categoryCode)
+		    order by r.item.id
+		""")
+		Page<Long> findDistinctItemIds(
+		    @Param("yearRangeId") Integer yearRangeId,
+		    @Param("categoryCode") String categoryCode,
+		    Pageable pageable
+		);
+	
+	List<Rate> findByYearRange_IdAndItem_IdIn(
+		    Integer yearRangeId,
+		    List<Long> itemIds,
+		    Sort sort
+		);
 
+	List<Rate> findByItemAndYearRange(Item item, YearRange yearRange);
+
+    List<Rate> findBySubItemAndYearRange(SubItems subItem, YearRange yearRange);
 }

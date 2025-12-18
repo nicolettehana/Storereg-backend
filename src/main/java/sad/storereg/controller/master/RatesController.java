@@ -1,7 +1,9 @@
 package sad.storereg.controller.master;
 
+import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,8 +47,15 @@ public class RatesController {
 	
 	@PostMapping
     public ResponseEntity<?> createRate(@RequestBody ItemRateCreateDTO request) {
-		System.out.println("Hey: "+request);
         return ResponseEntity.ok(rateService.createRate(request));
+		//return ResponseEntity.ok("ok");
+    }
+	
+	@PostMapping("/add")
+    public ResponseEntity<?> addRate(@RequestBody ItemRateCreateDTO request) throws BadRequestException {
+		if(request.getItemId()==null || request.getRate()==null || request.getUnitId()==null || request.getYearRangeId()==null)
+			throw new BadRequestException("Invalid input");
+        return ResponseEntity.ok(rateService.addRate(request));
 		//return ResponseEntity.ok("ok");
     }
 }

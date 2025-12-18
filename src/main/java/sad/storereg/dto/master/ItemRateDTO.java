@@ -22,6 +22,8 @@ public class ItemRateDTO {
     private String unit;     // only for items with no subItems
     private Double rate;     // only for items with no subItems
 
+    private List<UnitRateDTO> rates = new ArrayList<>();
+    
     private List<SubItemRateDTO> subItems = new ArrayList<>();
 
 }

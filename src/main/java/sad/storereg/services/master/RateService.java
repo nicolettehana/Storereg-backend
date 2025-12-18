@@ -2,7 +2,9 @@ package sad.storereg.services.master;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -10,6 +12,7 @@ import sad.storereg.dto.master.ItemDTO;
 import sad.storereg.dto.master.ItemRateCreateDTO;
 import sad.storereg.dto.master.ItemRateDTO;
 import sad.storereg.dto.master.SubItemRateDTO;
+import sad.storereg.dto.master.UnitRateDTO;
 import sad.storereg.exception.ObjectNotFoundException;
 import sad.storereg.models.master.Rate;
 import sad.storereg.models.master.Category;
@@ -24,6 +27,7 @@ import sad.storereg.repo.master.UnitRepository;
 import sad.storereg.repo.master.YearRangeRepository;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,24 +44,119 @@ public class RateService {
     private final UnitRepository unitRepository;
     private final CategoryRepository categoryRepository;
     
-    public Page<ItemRateDTO> getRates(String category, Integer yearRangeId, Pageable pageable) {
+    public Page<ItemRateDTO> getRates(
+            String categoryCode,
+            Integer yearRangeId,
+            Pageable pageable
+    ) {
 
-        Page<Rate> ratePage;
-
-        // ---- FILTER PRIORITY ----
-        if (category != null && yearRangeId != null) {
-            ratePage = rateRepository.findByCategory_CodeAndYearRange_Id(category, yearRangeId, pageable);
-        } 
-        else if (category != null) {
-            ratePage = rateRepository.findByCategory_Code(category, pageable);
-        } 
-        else if (yearRangeId != null) {
-            ratePage = rateRepository.findByYearRange_Id(yearRangeId, pageable);
-        } 
-        else {
-            ratePage = rateRepository.findAll(pageable);
+        YearRange yearRange = null;
+        if (yearRangeId != null) {
+            yearRange = yearRangeRepository.findById(yearRangeId)
+                    .orElseThrow(() -> new RuntimeException("YearRange not found"));
         }
 
+        Page<Item> itemPage = (categoryCode != null && !categoryCode.isBlank())
+                ? itemRepository.findAllByCategory_Code(categoryCode, pageable)
+                : itemRepository.findAll(pageable);
+
+        YearRange finalYearRange = yearRange;
+
+        return itemPage.map(item -> mapItem(item, finalYearRange));
+    }
+    
+    private ItemRateDTO mapItem(Item item, YearRange yearRange) {
+
+        ItemRateDTO dto = new ItemRateDTO();
+        dto.setId(item.getId());
+        dto.setName(item.getName());
+        dto.setCategory(item.getCategory().getName());
+        dto.setCategoryCode(item.getCategory().getCode());
+
+        if (yearRange != null) {
+            dto.setStartYear(yearRange.getStartYear());
+            dto.setEndYear(yearRange.getEndYear());
+        }
+
+        // Item WITHOUT sub-items → unit-wise rates
+        if (item.getSubItems() == null || item.getSubItems().isEmpty()) {
+
+            if (yearRange != null) {
+                List<Rate> rates = rateRepository
+                        .findByItemAndYearRange(item, yearRange);
+
+                dto.setRates(mapUnitRates(rates));
+            }
+            return dto;
+        }
+
+        // Item WITH sub-items
+        List<SubItemRateDTO> subItemDTOs = item.getSubItems()
+                .stream()
+                .map(subItem -> mapSubItem(subItem, yearRange))
+                .toList();
+
+        dto.setSubItems(subItemDTOs);
+        return dto;
+    }
+
+    private SubItemRateDTO mapSubItem(SubItems subItem, YearRange yearRange) {
+
+        SubItemRateDTO dto = new SubItemRateDTO();
+        dto.setId(subItem.getId());
+        dto.setName(subItem.getName());
+
+        if (yearRange != null) {
+            List<Rate> rates = rateRepository
+                    .findBySubItemAndYearRange(subItem, yearRange);
+
+            dto.setRates(mapUnitRates(rates));
+        }
+
+        return dto;
+    }
+
+    private List<UnitRateDTO> mapUnitRates(List<Rate> rates) {
+
+        return rates.stream()
+                .map(rate -> new UnitRateDTO(
+                        rate.getUnit().getId(),
+                        rate.getUnit().getUnit(),
+                        rate.getUnit().getName(),
+                        rate.getRate()
+                ))
+                .toList();
+    }
+    
+    public Page<ItemRateDTO> getRates_old(String category, Integer yearRangeId, Pageable pageable) {
+
+        Page<Rate> ratePage;
+        System.out.println("yearRangeId: "+yearRangeId+" category: "+category);
+//        Page<Long> itemPage =
+//    		    rateRepository.findDistinctItemIds(
+//    		        yearRangeId, category,
+//    		        pageable
+//    		    );
+        Page<Long> itemPage =
+    		    itemRepository.findDistinctItemIds(
+    		         category,
+    		        pageable
+    		    );
+        int totalElements = itemPage.getContent().size();
+        System.out.println("Distinct: "+itemPage.getContent()+" size : "+itemPage.getContent().size());
+        List<Rate> rates =
+    		    rateRepository.findByYearRange_IdAndItem_IdIn(
+    		        yearRangeId,
+    		        itemPage.getContent(),
+    		        Sort.by("item.id").ascending()
+    		    );
+    		ratePage = new PageImpl<>(
+    			    rates,
+    			    itemPage.getPageable(),      
+    			    totalElements
+    			);
+
+ 
         Map<Long, ItemRateDTO> grouped = new LinkedHashMap<>();
         Map<Long, Map<Long, SubItemRateDTO>> itemSubItemRateMap = new HashMap<>();
 
@@ -81,12 +180,25 @@ public class RateService {
                         rate.getYearRange().getEndYear(),
                         
                         null, null,
+                        new ArrayList<>(),
                         new ArrayList<>()
                     )
                 );
 
                 grouped.get(item.getId()).setUnit(rate.getUnit().getUnit());
                 grouped.get(item.getId()).setRate(rate.getRate());
+             // ✅ Add unit-wise rate instead of setting unit/rate directly Hazel
+//                grouped.get(item.getId()).getRates().add(
+//                    new UnitRateDTO(
+//                        rate.getUnit().getId(),
+//                        rate.getUnit().getName(),
+//                        rate.getRate(),
+//                        item.getId(),
+//                        null,                      // subItemId
+//                        rate.getUnit().getUnit(),
+//                        rate.getBalance()
+//                    )
+//                );
             }
 
 
@@ -106,7 +218,8 @@ public class RateService {
                         rate.getYearRange().getStartYear(),
                         rate.getYearRange().getEndYear(),
                         null, null,
-                        new ArrayList<>()
+                        new ArrayList<>(),
+                        new ArrayList<>() //Hazel
                     )
                 );
 
@@ -118,7 +231,7 @@ public class RateService {
                         sub.getId(),
                         sub.getName(),
                         rate.getUnit().getUnit(),
-                        rate.getRate()
+                        rate.getRate(), new ArrayList<>() //Hazel
                     )
                 );
 
@@ -155,7 +268,175 @@ public class RateService {
                             sub.getId(),
                             sub.getName(),
                             null,
-                            null
+                            null, new ArrayList<>()  //Hazel
+                        )
+                    );
+                } else {
+
+                    dto.getSubItems().add(existingSubMap.get(sub.getId()));
+                }
+            }
+        }
+
+
+        List<ItemRateDTO> dtoList = new ArrayList<>(grouped.values());
+        return new PageImpl<>(dtoList, pageable, ratePage.getTotalElements());
+    }
+    
+    public Page<ItemRateDTO> getRatess(String category, Integer yearRangeId, Pageable pageable) {
+
+        Page<Rate> ratePage;
+        System.out.println("yearRangeId: "+yearRangeId+" category: "+category);
+//        Page<Long> itemPage =
+//    		    rateRepository.findDistinctItemIds(
+//    		        yearRangeId, category,
+//    		        pageable
+//    		    );
+        Page<Long> itemPage =
+    		    itemRepository.findDistinctItemIds(
+    		         category,
+    		        pageable
+    		    );
+        int totalElements = itemPage.getContent().size();
+        System.out.println("Distinct: "+itemPage.getContent()+" size : "+itemPage.getContent().size());
+        List<Rate> rates =
+    		    rateRepository.findByYearRange_IdAndItem_IdIn(
+    		        yearRangeId,
+    		        itemPage.getContent(),
+    		        Sort.by("item.id").ascending()
+    		    );
+    		ratePage = new PageImpl<>(
+    			    rates,
+    			    itemPage.getPageable(),      
+    			    totalElements
+    			);
+
+        // ---- FILTER PRIORITY ----
+//        if (category != null && yearRangeId != null) {
+//            ratePage = rateRepository.findByCategory_CodeAndYearRange_Id(category, yearRangeId, pageable);
+//        } 
+//        else if (category != null) {
+//            ratePage = rateRepository.findByCategory_Code(category, pageable);
+//        } 
+//        else if (yearRangeId != null) {
+//        	
+//
+//        		List<Rate> rates =
+//        		    rateRepository.findByYearRange_IdAndItem_IdIn(
+//        		        yearRangeId,
+//        		        itemPage.getContent(),
+//        		        Sort.by("item.id").ascending()
+//        		    );
+//        		ratePage = new PageImpl<>(
+//        			    rates,
+//        			    itemPage.getPageable(),      
+//        			    itemPage.getTotalElements()  
+//        			);
+//            //ratePage = rateRepository.findByYearRange_Id(yearRangeId, pageable);
+//        } 
+//        else {
+//        	 ratePage = rateRepository.findAll(pageable);
+//        	// System.out.println("All rates: "+ratePage.getContent());
+//        }
+
+        Map<Long, ItemRateDTO> grouped = new LinkedHashMap<>();
+        Map<Long, Map<Long, SubItemRateDTO>> itemSubItemRateMap = new HashMap<>();
+
+
+        // --- FIRST PASS: process all rates ---
+        for (Rate rate : ratePage.getContent()) {
+
+            // --- ITEM RATE (subItem == null) ---
+            if (rate.getSubItem() == null) {
+
+                Item item = rate.getItem();
+
+                grouped.putIfAbsent(
+                    item.getId(),
+                    new ItemRateDTO(
+                        item.getId(),
+                        item.getName(),
+                        item.getCategory().getName(),
+                        item.getCategory().getCode(),
+                        rate.getYearRange().getStartYear(),
+                        rate.getYearRange().getEndYear(),
+                        
+                        null, null,
+                        new ArrayList<>(),new ArrayList<>() //Hazel
+                    )
+                );
+
+                grouped.get(item.getId()).setUnit(rate.getUnit().getUnit());
+                grouped.get(item.getId()).setRate(rate.getRate());
+            }
+
+
+            // --- SUB-ITEM RATE ---
+            else {
+
+                SubItems sub = rate.getSubItem();
+                Item item = sub.getItem();
+
+                grouped.putIfAbsent(
+                    item.getId(),
+                    new ItemRateDTO(
+                        item.getId(),
+                        item.getName(),
+                        item.getCategory().getName(),
+                        item.getCategory().getCode(),
+                        rate.getYearRange().getStartYear(),
+                        rate.getYearRange().getEndYear(),
+                        null, null,
+                        new ArrayList<>(), new ArrayList<>() //Hazel
+                    )
+                );
+
+                itemSubItemRateMap.putIfAbsent(item.getId(), new HashMap<>());
+
+                itemSubItemRateMap.get(item.getId()).put(
+                    sub.getId(),
+                    new SubItemRateDTO(
+                        sub.getId(),
+                        sub.getName(),
+                        rate.getUnit().getUnit(),
+                        rate.getRate(), new ArrayList<>() //Hazel
+                    )
+                );
+
+                // If sub-item rates exist, item-level rate does not apply
+                grouped.get(item.getId()).setUnit(null);
+                grouped.get(item.getId()).setRate(null);
+            }
+        }
+
+
+        // --- SECOND PASS: add missing subItems ---
+        for (ItemRateDTO dto : grouped.values()) {
+
+            // find a rate that belongs to this item
+            Rate exampleRate = ratePage.getContent().stream()
+                .filter(r -> r.getItem() != null && r.getItem().getId().equals(dto.getId()))
+                .findFirst()
+                .orElse(null);
+
+            if (exampleRate == null) continue;
+
+            Item item = exampleRate.getItem();
+
+            for (SubItems sub : item.getSubItems()) {
+
+                Map<Long, SubItemRateDTO> existingSubMap =
+                        itemSubItemRateMap.getOrDefault(dto.getId(), new HashMap<>());
+
+                if (!existingSubMap.containsKey(sub.getId())) {
+
+                    // No rate defined for this subItem
+                    dto.getSubItems().add(
+                        new SubItemRateDTO(
+                            sub.getId(),
+                            sub.getName(),
+                            null,
+                            null, new ArrayList<>() //Hazel
                         )
                     );
                 } else {
@@ -335,7 +616,8 @@ public class RateService {
         Unit unit = unitRepository.findById(request.getUnitId())
         		.orElseThrow(()-> new RuntimeException("Unit not found"));
         if(request.getSubItemId()==null) {
-        	if(rateRepository.findByItem_IdAndSubItemIsNullAndYearRange_Id(request.getItemId(), request.getYearRangeId()).isPresent())
+        	if(rateRepository.findByItem_IdAndSubItemIsNullAndYearRange_IdAndUnit_Id(request.getItemId(), request.getYearRangeId(),
+        			unit.getId()).isPresent())
         		throw new RuntimeException("Rate already present");
         }
         else {
@@ -368,5 +650,60 @@ public class RateService {
 		
 		Rate rate = rateRepository.findRates(itemId, subItemId, yearRangeId, unitId).orElseThrow(() -> new ObjectNotFoundException("Rate not available"));
 		return rate.getRate();
+	}
+	
+	public String addRate(ItemRateCreateDTO request) {
+		
+		YearRange yearRange = yearRangeRepository.findById(request.getYearRangeId())
+                .orElseThrow(() -> new RuntimeException("YearRange not found"));
+
+		SubItems subItemm=null;
+		Item item = itemRepository.findById(request.getItemId())
+				.orElseThrow(() -> new RuntimeException("Item not found"));
+		if(request.getSubItemId()!=null) {
+			boolean exists=false;
+			
+			for(SubItems subItem:item.getSubItems()) {
+				if(subItem.getId()==request.getSubItemId()) {
+					subItemm = subItem;
+					exists=true;
+				}
+			}
+			if(!exists)
+				throw new RuntimeException("Sub-item not found");
+		}		
+        
+        Unit unit = unitRepository.findById(request.getUnitId())
+        		.orElseThrow(()-> new RuntimeException("Unit not found"));
+        
+        if(request.getSubItemId()==null) {
+        	if(rateRepository.findByItem_IdAndSubItemIsNullAndYearRange_IdAndUnit_Id(request.getItemId(), request.getYearRangeId(),
+        			unit.getId()).isPresent())
+        		throw new RuntimeException("Rate already present");
+        }
+        else {
+        	if(rateRepository.findByItem_IdAndSubItem_IdAndYearRange_IdAndUnit_Id(request.getItemId(), request.getSubItemId(), request.getYearRangeId(), request.getUnitId()).isPresent())
+				throw new RuntimeException("Rate already present");
+        }
+        
+        		//.findByObjectTypeAndObjectIdAndYearRange_Id(request.getSubItemId()==null?"item":"subItem", 
+        		//request.getSubItemId()==null?item.getId():request.getSubItemId(), request.getYearRangeId()).isPresent())
+        	
+        Rate itemRate = new Rate();
+
+        //itemRate.setObjectType(request.getSubItemId()==null?"item":"subItem");
+        //itemRate.setObjectId(request.getSubItemId()==null?item.getId():request.getSubItemId());
+        //if(request.getSubItemId()==null)
+        itemRate.setItem(item);
+        if(request.getSubItemId()!=null)
+        	itemRate.setSubItem(subItemm);
+        itemRate.setYearRange(yearRange);
+        itemRate.setUnit(unit);
+        itemRate.setCategory(item.getCategory());
+        itemRate.setRate(request.getRate());
+        itemRate.setEntryDate(LocalDateTime.now());
+
+        rateRepository.save(itemRate);
+		return("Rate added");
 	}
 }
