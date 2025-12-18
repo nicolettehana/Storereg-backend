@@ -51,6 +51,13 @@ public class FirmController {
         return ResponseEntity.ok(firmService.createFirm(request));
     }
     
+    @GetMapping({ "/listt" })
+    public List<FirmsDTO> getListFirmss(
+    ) {
+    	
+    	return firmService.getFirmsList();
+    }
+    
     @GetMapping({ "/list" })
     public List<FirmsDTO> getListFirms(@RequestParam(defaultValue = "") LocalDate date
     ) {
