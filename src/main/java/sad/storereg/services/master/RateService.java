@@ -47,6 +47,7 @@ public class RateService {
     public Page<ItemRateDTO> getRates(
             String categoryCode,
             Integer yearRangeId,
+            String search,
             Pageable pageable
     ) {
 
@@ -55,10 +56,13 @@ public class RateService {
             yearRange = yearRangeRepository.findById(yearRangeId)
                     .orElseThrow(() -> new RuntimeException("YearRange not found"));
         }
+        
+        
 
-        Page<Item> itemPage = (categoryCode != null && !categoryCode.isBlank())
+        Page<Item> itemPage = (search!=null && search.length()>0)? itemRepository.searchByItemOrSubItemName(search, pageable):
+        	((categoryCode != null && !categoryCode.isBlank())
                 ? itemRepository.findAllByCategory_Code(categoryCode, pageable)
-                : itemRepository.findAll(pageable);
+                : itemRepository.findAll(pageable));
 
         YearRange finalYearRange = yearRange;
 
@@ -654,6 +658,8 @@ public class RateService {
 	
 	public String addRate(ItemRateCreateDTO request) {
 		
+		System.out.println("Input: "+request);
+		
 		YearRange yearRange = yearRangeRepository.findById(request.getYearRangeId())
                 .orElseThrow(() -> new RuntimeException("YearRange not found"));
 
@@ -662,9 +668,14 @@ public class RateService {
 				.orElseThrow(() -> new RuntimeException("Item not found"));
 		if(request.getSubItemId()!=null) {
 			boolean exists=false;
-			
+			System.out.println("Sub-item ID: "+request.getSubItemId());
 			for(SubItems subItem:item.getSubItems()) {
-				if(subItem.getId()==request.getSubItemId()) {
+				
+				System.out.println("subItem ID: "+subItem.getId()+" request ID: "+request.getSubItemId());
+				System.out.println("First type: "+item.getName()+" sub-item "+subItem);
+				//if(subItem.getId()==request.getSubItemId()) {
+				if (subItem.getId().equals(request.getSubItemId())) {
+					System.out.println("True "+subItem.getId());
 					subItemm = subItem;
 					exists=true;
 				}

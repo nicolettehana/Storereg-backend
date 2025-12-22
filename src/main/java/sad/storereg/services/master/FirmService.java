@@ -57,6 +57,14 @@ public class FirmService {
 
 	        page = new PageImpl<>(firms, pageable, fcPage.getTotalElements());
 	    }
+	    
+	    return page.map(this::convertToDto);
+	    
+	}
+	
+	
+	public Page<FirmsDTO> searchFirms(Pageable pageable, String search) {
+	    Page<Firm> page = firmRepository.findByFirmContainingIgnoreCase(search, pageable);
 
 	    return page.map(this::convertToDto);
 	}

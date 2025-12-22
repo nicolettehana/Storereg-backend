@@ -39,7 +39,10 @@ public class FirmController {
     	        @RequestParam(defaultValue = "") Integer yearRangeId
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        if(yearRangeId!=null)
+        if(search!=null && search.length()>0){
+        	return firmService.searchFirms(pageable, search);
+        }
+        else if(yearRangeId!=null)
         	return firmService.getFirms(yearRangeId, category, pageable);
 
         return firmService.getFirms(pageable, search, category);

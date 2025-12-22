@@ -40,7 +40,7 @@ public class RatesController {
 	@RequestParam int size,
 	@RequestParam(defaultValue = "") String search) {
 
-		return rateService.getRates(category, yearRange, PageRequest.of(page, size));
+		return rateService.getRates(category, yearRange, search, PageRequest.of(page, size));
 		
 
 	}

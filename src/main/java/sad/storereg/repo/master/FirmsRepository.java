@@ -25,5 +25,6 @@ public interface FirmsRepository extends JpaRepository<Firm, Long>{
 	    """)
 	    List<Firm> findAllByYear(int year);
 	
-
+	Page<Firm> findByFirmContainingIgnoreCase(String search, Pageable pageable);
+	
 }

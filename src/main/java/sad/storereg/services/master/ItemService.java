@@ -28,9 +28,13 @@ public class ItemService {
 
     public Page<Item> getItems(Pageable pageable, String search, String category) {
     	Page<Item> page;
-    	if(category==null || category.equals("") || category.equals("All"))
+    	if(search!=null && search.length()>0) {
+    		page = itemRepository.searchByItemOrSubItemName(search, pageable);
+    	}
+    	else if(category==null || category.equals("") || category.equals("All"))
     		page = itemRepository.findAll(pageable);
-    	else page = itemRepository.findAllByCategory_Code(category, pageable);
+    	else
+    		page = itemRepository.findAllByCategory_Code(category, pageable);
     	
     	//page.forEach(item -> item.setBalance(purchaseService.getAvailableBalance(item.getId(),item.getSubItems()==null?null:item.getSubItems().getId(), rate.getUnit().getId(), issueDate==null?LocalDate.now():null)));
 
