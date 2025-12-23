@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import sad.storereg.dto.master.CreateFirmDTO;
+import sad.storereg.dto.master.FirmCheckDTO;
 import sad.storereg.dto.master.FirmYearDTO;
 import sad.storereg.dto.master.FirmsDTO;
 import sad.storereg.models.master.Firm;
@@ -78,6 +79,19 @@ public class FirmController {
         return ResponseEntity.ok(firmService.createFirmYear(request));
     }
     
-    
+    @GetMapping({"/all/{category}" })
+    public Page<FirmCheckDTO> getPaginatedAllFirms(
+    		 @PathVariable(required = true) String category,
+    	        @RequestParam(defaultValue = "0") int page,
+    	        @RequestParam(defaultValue = "10") int size,
+    	        @RequestParam(defaultValue = "") String search,
+    	        @RequestParam(required= true, defaultValue = "") Integer yearRangeId
+    ) {
+    	
+        Pageable pageable = PageRequest.of(page, size);
+        
+        	return firmService.getAllFirms(yearRangeId, category, search, pageable);
+
+    }
 
 }

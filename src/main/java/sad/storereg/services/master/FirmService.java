@@ -3,10 +3,13 @@ package sad.storereg.services.master;
 import java.util.List;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import sad.storereg.dto.master.CreateFirmDTO;
+import sad.storereg.dto.master.FirmCheckDTO;
 import sad.storereg.dto.master.FirmYearDTO;
 import sad.storereg.dto.master.FirmsDTO;
 import sad.storereg.exception.UnauthorizedException;
@@ -265,5 +269,20 @@ public class FirmService {
                 .map(this::convertToDto)
                 .toList();
     }
+    
+    public Page<FirmCheckDTO> getAllFirms(
+            Integer yearRangeId,
+            String categoryCode,
+            String search,
+            Pageable pageable) {
+
+    	return firmRepository.findFirmsWithCheckedFlag(
+                search,
+                categoryCode,
+                yearRangeId,
+                pageable
+        );
+    }
+
 
 }

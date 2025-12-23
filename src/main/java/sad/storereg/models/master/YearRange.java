@@ -2,6 +2,8 @@ package sad.storereg.models.master;
 
 import java.time.LocalDateTime;
 
+import org.springframework.data.annotation.Transient;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -32,5 +34,8 @@ public class YearRange {
     @JsonIgnore
     @Column(name = "entrydate")
     private LocalDateTime entryDate;
+    
+    @Transient
+    private Integer isChecked;
 
 }
