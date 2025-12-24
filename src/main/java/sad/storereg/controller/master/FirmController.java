@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,7 +42,7 @@ public class FirmController {
     	        @RequestParam(defaultValue = "") String search,
     	        @RequestParam(defaultValue = "") Integer yearRangeId
     ) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "firm"));
         if(search!=null && search.length()>0){
         	return firmService.searchFirms(pageable, search);
         }
@@ -90,7 +91,7 @@ public class FirmController {
     	        @RequestParam(required= true, defaultValue = "") Integer yearRangeId
     ) {
     	
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "firm"));
         
         	return firmService.getAllFirms(yearRangeId, category, search, pageable);
 
@@ -104,6 +105,12 @@ public class FirmController {
     	}catch(Exception ex) {
     		throw ex;
     	}
+    }
+    
+    @PostMapping("/update")
+    public ResponseEntity<?> updateFirm(@RequestBody FirmsDTO request) {
+        
+        return ResponseEntity.ok(firmService.updateFirm(request));
     }
 
 }

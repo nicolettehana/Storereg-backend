@@ -23,6 +23,7 @@ import sad.storereg.dto.master.FirmApproveDTO;
 import sad.storereg.dto.master.FirmCheckDTO;
 import sad.storereg.dto.master.FirmYearDTO;
 import sad.storereg.dto.master.FirmsDTO;
+import sad.storereg.exception.ObjectNotFoundException;
 import sad.storereg.exception.UnauthorizedException;
 import sad.storereg.models.master.Category;
 import sad.storereg.models.master.Firm;
@@ -318,8 +319,20 @@ public class FirmService {
 	        firmYearRepository.save(firmYear);
 	        return "Firm approved";
         }
-
-
+    }
+    
+    @Transactional
+    public String updateFirm(FirmsDTO request) {
+    	
+    	if(request.getId()==null || request.getFirm()==null || request.getFirm().length()==0) {
+    		throw new UnauthorizedException("Firm ID and Firm are required");
+    	}
+    
+    	Firm firm = firmRepository.findById(request.getId()).orElseThrow(()-> new ObjectNotFoundException("Invalid Firm ID"));
+    	
+    	firm.setFirm(request.getFirm());
+    	firmRepository.save(firm);
+        return "Firm updated";
     }
 
 
