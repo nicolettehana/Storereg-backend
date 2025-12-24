@@ -13,6 +13,8 @@ public interface CategoryRepository extends JpaRepository<Category, String>{
 	
 	Optional<Category> findByCodeOrName(String code, String name);
 	
+	Optional<Category> findByCode(String code);
+	
 //	@Query("""
 //	        SELECT new com.example.dto.CategoryCountDTO(c.name, COUNT(f))
 //	        FROM Category c

@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import sad.storereg.annotations.Auditable;
 import sad.storereg.dto.master.CreateFirmDTO;
+import sad.storereg.dto.master.FirmApproveDTO;
 import sad.storereg.dto.master.FirmCheckDTO;
 import sad.storereg.dto.master.FirmYearDTO;
 import sad.storereg.dto.master.FirmsDTO;
@@ -92,6 +94,16 @@ public class FirmController {
         
         	return firmService.getAllFirms(yearRangeId, category, search, pageable);
 
+    }
+    
+    @Auditable
+    @PostMapping("/approve")
+    public ResponseEntity<?> addRemoveApprovedFirm(@RequestBody FirmApproveDTO request) {
+    	try {
+    		return ResponseEntity.ok(firmService.updateFirmYear(request));
+    	}catch(Exception ex) {
+    		throw ex;
+    	}
     }
 
 }

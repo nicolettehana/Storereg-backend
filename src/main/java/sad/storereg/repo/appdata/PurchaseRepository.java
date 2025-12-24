@@ -209,4 +209,20 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 			                                         @Param("subItemId") Long subItemId,
 			                                         @Param("unitId") Integer unitId,
 			                                         @Param("endDate") LocalDate endDate);
+			    
+			    @Query("""
+			            SELECT DISTINCT p
+			            FROM Purchase p
+			            JOIN p.items pi
+			            JOIN pi.item i
+			            WHERE p.firm.id = :firmId
+			              AND p.date BETWEEN :startDate AND :endDate
+			              AND i.category.code = :categoryCode
+			        """)
+			        List<Purchase> findPurchasesByFirmDateRangeAndCategory(
+			                @Param("firmId") Long firmId,
+			                @Param("startDate") LocalDate startDate,
+			                @Param("endDate") LocalDate endDate,
+			                @Param("categoryCode") String categoryCode
+			        );
 }

@@ -21,6 +21,7 @@ import sad.storereg.dto.appdata.SubItemPurchaseDTO;
 import sad.storereg.exception.ObjectNotFoundException;
 import sad.storereg.models.appdata.Purchase;
 import sad.storereg.models.appdata.PurchaseItems;
+import sad.storereg.models.master.Category;
 import sad.storereg.models.master.Firm;
 import sad.storereg.models.master.YearRange;
 import sad.storereg.repo.appdata.PurchaseRepository;
@@ -235,6 +236,20 @@ public class PurchaseService {
 	    response.put("categories", categories);
 
 	    return response;
+	}
+	
+	public boolean purchaseExist(Firm firm, YearRange yearRange, Category category) {
+		LocalDate startDate = LocalDate.of(yearRange.getStartYear(), 1, 1);
+		LocalDate endDate   = LocalDate.of(yearRange.getEndYear(), 12, 31);
+
+		List<Purchase> purchases =
+		        purchaseRepository.findPurchasesByFirmDateRangeAndCategory(
+		                firm.getId(),
+		                startDate,
+		                endDate,
+		                category.getCode()
+		        );
+		return (purchases.size()>0?true:false);
 	}
 
 

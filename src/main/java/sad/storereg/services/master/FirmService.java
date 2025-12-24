@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import sad.storereg.dto.master.CreateFirmDTO;
+import sad.storereg.dto.master.FirmApproveDTO;
 import sad.storereg.dto.master.FirmCheckDTO;
 import sad.storereg.dto.master.FirmYearDTO;
 import sad.storereg.dto.master.FirmsDTO;
@@ -33,6 +34,7 @@ import sad.storereg.repo.master.FirmCategoryRepository;
 import sad.storereg.repo.master.FirmYearRepository;
 import sad.storereg.repo.master.FirmsRepository;
 import sad.storereg.repo.master.YearRangeRepository;
+import sad.storereg.services.appdata.PurchaseService;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +45,7 @@ public class FirmService {
 	private final CategoryRepository categoryRepository;
 	private final FirmYearRepository firmYearRepository;
 	private final YearRangeRepository yearRangeRepository;
+	private final PurchaseService purchaseService;
 
 	public Page<FirmsDTO> getFirms(Pageable pageable, String search, String category) {
 	    Page<Firm> page;
@@ -282,6 +285,41 @@ public class FirmService {
                 yearRangeId,
                 pageable
         );
+    }
+    
+    @Transactional
+    public String updateFirmYear(FirmApproveDTO request) {
+
+        // --- Validate Firm ---
+        Firm firm = firmRepository.findById(request.getFirmId())
+                .orElseThrow(() -> new UnauthorizedException("Firm not found with id: " + request.getFirmId()));
+
+        // --- Validate YearRange ---
+        YearRange yearRange = yearRangeRepository.findById(request.getYearRangeId())
+                .orElseThrow(() -> new UnauthorizedException("YearRange not found with id: " + request.getYearRangeId()));
+        
+        Category category = categoryRepository.findByCode(request.getCategoryCode()).orElseThrow(() -> new UnauthorizedException("Catgeory not found with code: " + request.getCategoryCode()));
+
+        Optional<FirmYear> fy= firmYearRepository.findByYearRange_IdAndCategory_CodeAndFirm_Id(yearRange.getId(), category.getCode(), firm.getId());
+        if(fy.isPresent())
+        {
+        	if(purchaseService.purchaseExist(firm, yearRange, category))
+        		throw new UnauthorizedException("Purchase/Purchases already made for this Firm, Year and category");
+        	else {
+        		firmYearRepository.deleteById(fy.get().getId());
+        		return "Firm un-approved";
+        	}
+        }
+        else {
+	        FirmYear firmYear = new FirmYear();
+	        firmYear.setFirm(firm);
+	        firmYear.setCategory(category);
+	        firmYear.setYearRange(yearRange);
+	        firmYearRepository.save(firmYear);
+	        return "Firm approved";
+        }
+
+
     }
 
 
