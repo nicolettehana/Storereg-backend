@@ -137,6 +137,20 @@ public class MasterDataServices {
 		}
     }
 	
+	public String updateCategory(Category request) {
+		try {
+			Optional<Category> category=categoryRepo.findByCodeOrName(request.getCode(), request.getName());
+			if(category.isEmpty())
+				throw new UnauthorizedException("Category/Code does not exist");
+	    	
+	    	category.get().setName(request.getName());
+	    	categoryRepo.save(category.get());
+	    	return "Updated successfully";
+		}catch(Exception ex) {
+			throw ex;
+		}
+    }
+	
 	public String createUnit(Unit request) {
 		try {
 			if(unitRepo.findByUnitOrName(request.getUnit(), request.getName()).isPresent())

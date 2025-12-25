@@ -1,12 +1,13 @@
 package sad.storereg.controller.appdata;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,17 @@ public class StockController {
 	    ) {
 	        List<CategoryStockResponse> response = stockService.getStockFiltered(level);
 	        return ResponseEntity.ok(response);
+	    }
+	    
+	    @GetMapping("/stats")
+	    public Map<String, Object> getStock(
+	    ) {
+	    	
+	    	Map<String, Object> response = new HashMap<>();
+	        response.put("total", 1);
+	        response.put("byCategory", 1);
+	        return response;
+
 	    }
 
 }

@@ -66,9 +66,60 @@ public class FirmService {
 	        page = new PageImpl<>(firms, pageable, fcPage.getTotalElements());
 	    }
 	    
-	    return page.map(this::convertToDto);
+	    return page.map(this::convertToDto2);
 	    
 	}
+	
+	private FirmsDTO convertToDto2(Firm firm) {
+
+	    List<FirmYear> firmYears =
+	            firmYearRepository.findByFirm_Id(firm.getId());
+
+	    // Group by YearRange ID (NOT entity instance)
+	    Map<Integer, List<FirmYear>> byYearRange =
+	            firmYears.stream()
+	                .collect(Collectors.groupingBy(
+	                    fy -> fy.getYearRange().getId()
+	                ));
+
+	    List<YearRange> yearRanges =
+	            byYearRange.values().stream()
+	                .map(fyList -> {
+
+	                    YearRange source = fyList.get(0).getYearRange();
+
+	                    // CREATE A NEW INSTANCE (important)
+	                    YearRange yr = new YearRange();
+	                    yr.setId(source.getId());
+	                    yr.setStartYear(source.getStartYear());
+	                    yr.setEndYear(source.getEndYear());
+
+	                    List<String> categoryCodes =
+	                            fyList.stream()
+	                                .map(fy -> fy.getCategory().getCode())
+	                                .distinct()
+	                                .sorted()  
+	                                .toList();
+
+	                    yr.setCategoryCodes(categoryCodes);
+
+	                    return yr;
+	                })
+	                .toList();
+
+	    return FirmsDTO.builder()
+	            .id(firm.getId())
+	            .firm(firm.getFirm())
+	            .categories(
+	                firm.getCategories().stream()
+	                    .map(FirmCategory::getCategory)
+	                    .toList()
+	            )
+	            .yearRanges(yearRanges)
+	            .build();
+	}
+
+
 	
 	
 	public Page<FirmsDTO> searchFirms(Pageable pageable, String search) {

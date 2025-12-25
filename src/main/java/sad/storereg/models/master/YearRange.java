@@ -1,6 +1,7 @@
 package sad.storereg.models.master;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.annotation.Transient;
 
@@ -37,5 +38,8 @@ public class YearRange {
     
     @Transient
     private Integer isChecked;
+    
+    @Transient
+    private List<String> categoryCodes;
 
 }

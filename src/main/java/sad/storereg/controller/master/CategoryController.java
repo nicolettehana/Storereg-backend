@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +24,7 @@ import sad.storereg.models.master.Category;
 import sad.storereg.models.master.YearRange;
 import sad.storereg.repo.master.CategoryRepository;
 import sad.storereg.repo.master.FirmCategoryRepository;
+import sad.storereg.repo.master.FirmYearRepository;
 import sad.storereg.repo.master.FirmsRepository;
 import sad.storereg.services.master.MasterDataServices;
 
@@ -33,7 +35,7 @@ public class CategoryController {
 	
 	private final MasterDataServices masterDataServices;
 	private final FirmsRepository firmRepo;
-	private final FirmCategoryRepository firmCategoryRepo;
+	private final FirmYearRepository firmYearRepo;
 
 	@GetMapping
 	public List<Category> getCatagory(HttpServletRequest request, HttpServletResponse response , @AuthenticationPrincipal User user) throws IOException {
@@ -47,11 +49,13 @@ public class CategoryController {
 	}
 	
 	@GetMapping("/stats")
-    public Map<String, Object> getStats() {
+    public Map<String, Object> getStats(@RequestParam(required= false) Long yearRangeId) {
 
         Map<String, Object> response = new HashMap<>();
         response.put("total", firmRepo.count());
-        response.put("byCategory", firmCategoryRepo.countFirmsPerCategory());
+        //response.put("byCategory", firmCategoryRepo.countFirmsPerCategory());
+        if(yearRangeId!=null)
+        	response.put("byCategory", firmYearRepo.findCategoryCountsByYearRange(yearRangeId));
 
         return response;
     }
@@ -65,6 +69,19 @@ public class CategoryController {
 			throw ex;
 		} catch (Exception ex) {
 			throw new InternalServerError("Unable to add category", ex);
+		}
+        
+    }
+	
+	@PostMapping("/update")
+    public ResponseEntity<?> updateCategory(@RequestBody Category request) {
+		try {
+			return ResponseEntity.ok(masterDataServices.updateCategory(request));
+			//return ResponseEntity.ok("ok");
+		} catch (UnauthorizedException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			throw new InternalServerError("Unable to update category", ex);
 		}
         
     }
