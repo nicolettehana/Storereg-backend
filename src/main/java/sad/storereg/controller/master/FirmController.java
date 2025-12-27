@@ -1,5 +1,6 @@
 package sad.storereg.controller.master;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -7,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -112,5 +115,20 @@ public class FirmController {
         
         return ResponseEntity.ok(firmService.updateFirm(request));
     }
+    
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> exportFirms(
+            @RequestParam Integer yearRangeId,
+            @RequestParam(required = false) String category
+    ) throws IOException {
+
+        byte[] excelData = firmService.exportApprovedFirms(yearRangeId, category);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=approved_firms.xlsx")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(excelData);
+    }
+
 
 }
