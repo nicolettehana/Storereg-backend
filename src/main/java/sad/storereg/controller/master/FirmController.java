@@ -47,7 +47,7 @@ public class FirmController {
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "firm"));
         if(search!=null && search.length()>0){
-        	return firmService.searchFirms(pageable, search);
+        	return firmService.searchFirms(pageable, search, yearRangeId);
         }
         else if(yearRangeId!=null)
         	return firmService.getFirms(yearRangeId, category, pageable);
@@ -118,16 +118,26 @@ public class FirmController {
     
     @GetMapping("/export")
     public ResponseEntity<byte[]> exportFirms(
-            @RequestParam Integer yearRangeId,
+            @RequestParam(required = false) Integer yearRangeId,
             @RequestParam(required = false) String category
     ) throws IOException {
 
-        byte[] excelData = firmService.exportApprovedFirms(yearRangeId, category);
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=approved_firms.xlsx")
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(excelData);
+    	if(yearRangeId!=null) {
+	    	byte[] excelData = firmService.exportApprovedFirms(yearRangeId, category);
+	
+	        return ResponseEntity.ok()
+	                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=approved_firms.xlsx")
+	                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+	                .body(excelData);
+    	}
+    	else {
+	    	byte[] excelData = firmService.exportAllFirms();
+	
+	        return ResponseEntity.ok()
+	                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=all_firms.xlsx")
+	                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+	                .body(excelData);
+    	}
     }
 
 

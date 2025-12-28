@@ -1,9 +1,14 @@
 package sad.storereg.services.master;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,7 +21,11 @@ import sad.storereg.models.master.Item;
 import sad.storereg.models.master.SubItems;
 import sad.storereg.repo.master.CategoryRepository;
 import sad.storereg.repo.master.ItemRepository;
+import sad.storereg.services.appdata.ExcelServices;
 import sad.storereg.services.appdata.PurchaseService;
+
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +34,7 @@ public class ItemService {
 	private final ItemRepository itemRepository;
 	private final CategoryRepository categoryRepository;
 	private final PurchaseService purchaseService;
+	private final ExcelServices excelService;
 
     public Page<Item> getItems(Pageable pageable, String search, String category) {
     	Page<Item> page;
@@ -96,5 +106,39 @@ public class ItemService {
     
     public Long getTotalItems() {
     	return itemRepository.getAbsoluteTotal();
+    }
+    
+    public byte[] getItems(String category) throws IOException {
+
+        List<Item> items = getItemsList(null,category);
+
+     // Calculate balances
+        items.forEach(item -> {
+            if (item.getSubItems() != null && !item.getSubItems().isEmpty()) {
+                item.getSubItems().forEach(subItem -> {
+                    subItem.setBalance(
+                        purchaseService.getAvailableBalanceAllUnits(
+                            item.getId(), subItem.getId(), LocalDate.now()));
+                });
+            } else {
+                item.setBalance(
+                    purchaseService.getAvailableBalanceAllUnits(
+                        item.getId(), null, LocalDate.now()));
+            }
+        });
+
+        try (Workbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            Sheet sheet = workbook.createSheet("Items");
+            Map<String, CellStyle> styles = excelService.createStyles(workbook);
+
+            String categoryName = (category!=null && category.length()>0)?categoryRepository.findByCode(category).get().getName():"All";
+            excelService.createExcelContentItems(sheet, items, category, categoryName, styles);
+
+            workbook.write(out);
+            return out.toByteArray();
+        }
+    	
     }
 }

@@ -38,4 +38,20 @@ public interface FirmYearRepository extends JpaRepository<FirmYear, Long>{
                 @Param("yearRangeId") Long yearRangeId
         );
 
+
+        @Query("""
+            SELECT fy
+            FROM FirmYear fy
+            JOIN fy.firm f
+            JOIN fy.yearRange yr
+            WHERE yr.id = :yearRangeId
+              AND LOWER(f.firm) LIKE LOWER(CONCAT('%', :firmName, '%'))
+        """)
+        Page<FirmYear> findByYearRangeIdAndFirmNameLike(
+                @Param("yearRangeId") Integer yearRangeId,
+                @Param("firmName") String firmName,
+                Pageable pageable
+        );
+
+
 }

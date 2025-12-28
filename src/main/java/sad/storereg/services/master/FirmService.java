@@ -133,14 +133,53 @@ public class FirmService {
 	            .yearRanges(yearRanges)
 	            .build();
 	}
-
-
 	
-	
-	public Page<FirmsDTO> searchFirms(Pageable pageable, String search) {
-	    Page<Firm> page = firmRepository.findByFirmContainingIgnoreCase(search, pageable);
+	public Page<FirmsDTO> searchFirms(Pageable pageable, String search, Integer yearRangeId) {
+	    
+	    
+	    if(yearRangeId==null) {
+	    	Page<Firm> page = firmRepository.findByFirmContainingIgnoreCase(search, pageable);
+	    	return page.map(this::convertToDto2);
+	    }
+	    else {
+	    	Page<FirmYear> firmYears =
+	    	        firmYearRepository.findByYearRangeIdAndFirmNameLike(yearRangeId, search, pageable);
+	    	// --- GROUP RESULT BY FIRM ---
+	        Map<Long, FirmsDTO> dtoMap = new LinkedHashMap<>();
 
-	    return page.map(this::convertToDto);
+	        for (FirmYear fy : firmYears.getContent()) {
+
+	            Long firmId = fy.getFirm().getId();
+
+	            // Create DTO only once per firm
+	            dtoMap.computeIfAbsent(firmId, id -> {
+	                FirmsDTO dto = new FirmsDTO();
+	                dto.setId(id);
+	                dto.setFirm(fy.getFirm().getFirm());
+	                dto.setCategories(new ArrayList<>());
+	                dto.setYearRanges(new ArrayList<>());
+	                return dto;
+	            });
+
+	            FirmsDTO dto = dtoMap.get(firmId);
+
+	            // Add category if not already present
+	            if (!dto.getCategories().contains(fy.getCategory())) {
+	                dto.getCategories().add(fy.getCategory());
+	            }
+
+	            // Add yearRange if not already present
+	            if (!dto.getYearRanges().contains(fy.getYearRange())) {
+	                dto.getYearRanges().add(fy.getYearRange());
+	            }
+	        }
+
+	        // Convert map to list
+	        List<FirmsDTO> mergedList = new ArrayList<>(dtoMap.values());
+
+	        // Pagination metadata stays from FirmYear page
+	        return new PageImpl<>(mergedList, pageable, firmYears.getTotalElements());
+	    }
 	}
 	
 	private FirmsDTO convertToDto(Firm firm) {
@@ -406,7 +445,6 @@ public class FirmService {
         Page<FirmYear> firmYears;
 
         if (categoryCode != null && !categoryCode.isEmpty()) {
-        	System.out.println("Here:");
             firmYears = firmYearRepository.findByYearRange_IdAndCategory_Code(
                     yearRangeId, categoryCode, Pageable.unpaged()
             );
@@ -490,7 +528,7 @@ public class FirmService {
         		if(category.isPresent())
         			cat=category.get().getName();
         	}
-        	catRow.createCell(1).setCellValue(categoryCode == null ? "All" : cat);
+        	catRow.createCell(1).setCellValue((categoryCode==null || categoryCode.length()==0) ? "All" : cat);
         	
         	rowIdx++; // blank row after Category
 
@@ -547,8 +585,15 @@ public class FirmService {
 
         	 // Merge Sl No and Firm cells if multiple categories
         	 if (categoryCount > 1) {
+        		 CellRangeAddress slMerge =
+     	    	        new CellRangeAddress(startRow, endRow, 0, 0);
+     	    	CellRangeAddress firmMerge =
+     	    	        new CellRangeAddress(startRow, endRow, 1, 1);
         	     sheet.addMergedRegion(new CellRangeAddress(startRow, endRow, 0, 0));
         	     sheet.addMergedRegion(new CellRangeAddress(startRow, endRow, 1, 1));
+        	     excelService.applyBorder(slMerge, sheet);
+        	     excelService.applyBorder(firmMerge, sheet);
+        	    	
         	 }
 
         	}
@@ -571,6 +616,125 @@ public class FirmService {
 
         YearRange yr = firms.get(0).getYearRanges().get(0);
         return yr.getStartYear() + " - " + yr.getEndYear();
+    }
+    
+    public byte[] exportAllFirms() throws IOException {
+
+    	List<Firm> f = firmRepository.findAll();
+    	List<FirmsDTO> firms = f.stream()
+    	        .map(this::convertToDto2)
+    	        .toList();
+
+
+        try (Workbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            Sheet sheet = workbook.createSheet("All Firms");
+            Map<String, CellStyle> styles = excelService.createStyles(workbook);
+
+            int rowIdx = 0;
+
+            // ===== TITLE =====
+            Row titleRow = sheet.createRow(rowIdx++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("All Firms");
+            titleCell.setCellStyle(styles.get("title"));
+
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 2));
+            rowIdx++;
+
+            // ===== GENERATED DATE =====
+            Row genRow = sheet.createRow(rowIdx++);
+            Cell genLabel = genRow.createCell(0);
+            genLabel.setCellValue("Generated on:");
+            genLabel.setCellStyle(styles.get("bold"));
+
+            genRow.createCell(1)
+                  .setCellValue(LocalDate.now()
+                          .format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+
+            rowIdx++;
+
+            // ===== TABLE HEADER =====
+            Row headerRow = sheet.createRow(rowIdx++);
+            String[] headers = {"Sl. No.", "Firm", "Year Approved"};
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(styles.get("headerBorder"));
+            }
+
+            // ===== TABLE DATA =====
+            int slNo = 1;
+
+            for (FirmsDTO dto : firms) {
+
+                int startRow = rowIdx;
+                List<YearRange> yearRanges = dto.getYearRanges();
+
+                if (yearRanges == null || yearRanges.isEmpty()) {
+                    Row row = sheet.createRow(rowIdx++);
+                    excelService.createCell(row, 0, slNo++, styles);
+                    excelService.createCell(row, 1, dto.getFirm(), styles);
+                    excelService.createCell(row, 2, "", styles);
+                    continue;
+                }
+
+                // Create one row per year range
+                for (YearRange yr : yearRanges) {
+                    Row row = sheet.createRow(rowIdx++);
+                    excelService.createCell(row, 2, formatYearRange(yr), styles);
+                }
+
+                int endRow = rowIdx - 1;
+
+                // Write Sl No & Firm only once
+                Row firstRow = sheet.getRow(startRow);
+
+                excelService.createCell(firstRow, 0, slNo++, styles);
+                excelService.createCell(firstRow, 1, dto.getFirm(), styles);
+
+                // Merge if more than one year range
+                if (yearRanges.size() > 1) {
+                	CellRangeAddress slMerge =
+         	    	        new CellRangeAddress(startRow, endRow, 0, 0);
+         	    	CellRangeAddress firmMerge =
+         	    	        new CellRangeAddress(startRow, endRow, 1, 1);
+                    sheet.addMergedRegion(
+                        new CellRangeAddress(startRow, endRow, 0, 0)
+                    );
+                    sheet.addMergedRegion(
+                        new CellRangeAddress(startRow, endRow, 1, 1)
+                    );
+            	     excelService.applyBorder(slMerge, sheet);
+            	     excelService.applyBorder(firmMerge, sheet);
+                }
+            }
+
+
+            // ===== AUTO SIZE =====
+            for (int i = 0; i < 3; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            return out.toByteArray();
+        }
+    }
+
+    private String formatYearRange(YearRange yr) {
+
+        String yearPart = yr.getStartYear() + "-" + yr.getEndYear();
+
+        if (yr.getCategoryCodes() == null || yr.getCategoryCodes().isEmpty()) {
+            return yearPart;
+        }
+
+        String categories =
+                String.join(", ", yr.getCategoryCodes());
+
+        return yearPart + " (" + categories + ")";
     }
 
 }
