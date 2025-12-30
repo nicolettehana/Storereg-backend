@@ -1,6 +1,7 @@
 package sad.storereg.services.appdata;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,66 +28,59 @@ public class ExcelServices {
 	
 	public Map<String, CellStyle> createStyles(Workbook workbook) {
 
-        Map<String, CellStyle> styles = new HashMap<>();
+	    Map<String, CellStyle> styles = new HashMap<>();
 
-        // ===== TITLE STYLE =====
-        Font titleFont = workbook.createFont();
-        titleFont.setBold(true);
-        titleFont.setFontHeightInPoints((short) 16);
+	    // ===== TITLE =====
+	    Font titleFont = workbook.createFont();
+	    titleFont.setBold(true);
+	    titleFont.setFontHeightInPoints((short) 16);
 
-        CellStyle titleStyle = workbook.createCellStyle();
-        titleStyle.setFont(titleFont);
-        titleStyle.setAlignment(HorizontalAlignment.LEFT);
-        styles.put("title", titleStyle);
+	    CellStyle title = workbook.createCellStyle();
+	    title.setFont(titleFont);
+	    title.setAlignment(HorizontalAlignment.LEFT);
+	    styles.put("title", title);
 
-        // ===== BOLD STYLE =====
-        Font boldFont = workbook.createFont();
-        boldFont.setBold(true);
+	    // ===== BOLD =====
+	    Font boldFont = workbook.createFont();
+	    boldFont.setBold(true);
 
-        CellStyle boldStyle = workbook.createCellStyle();
-        boldStyle.setFont(boldFont);
-        styles.put("bold", boldStyle);
+	    CellStyle bold = workbook.createCellStyle();
+	    bold.setFont(boldFont);
+	    styles.put("bold", bold);
 
-        // ===== TABLE HEADER STYLE =====
-        Font headerFont = workbook.createFont();
-        headerFont.setBold(true);
+	    // ===== HEADER =====
+	    Font headerFont = workbook.createFont();
+	    headerFont.setBold(true);
 
-        CellStyle headerStyle = workbook.createCellStyle();
-        headerStyle.setFont(headerFont);
-        styles.put("header", headerStyle);
-        
-        // ===== TABLE BORDER STYLE =====
-        CellStyle borderStyle = workbook.createCellStyle();
-        borderStyle.setBorderTop(BorderStyle.THIN);
-        borderStyle.setBorderBottom(BorderStyle.THIN);
-        borderStyle.setBorderLeft(BorderStyle.THIN);
-        borderStyle.setBorderRight(BorderStyle.THIN);
-        styles.put("border", borderStyle);
+	    CellStyle header = workbook.createCellStyle();
+	    header.setFont(headerFont);
+	    styles.put("header", header);
 
-        // ===== HEADER + BORDER STYLE =====
-        CellStyle headerBorderStyle = workbook.createCellStyle();
-        headerBorderStyle.cloneStyleFrom(styles.get("header"));
-        headerBorderStyle.setBorderTop(BorderStyle.THIN);
-        headerBorderStyle.setBorderBottom(BorderStyle.THIN);
-        headerBorderStyle.setBorderLeft(BorderStyle.THIN);
-        headerBorderStyle.setBorderRight(BorderStyle.THIN);
-        styles.put("headerBorder", headerBorderStyle);
-        
-        // ===== WRAP + BORDER STYLE =====
-        CellStyle wrapBorderStyle = workbook.createCellStyle();
-        wrapBorderStyle.setWrapText(true);
-        wrapBorderStyle.setBorderTop(BorderStyle.THIN);
-        wrapBorderStyle.setBorderBottom(BorderStyle.THIN);
-        wrapBorderStyle.setBorderLeft(BorderStyle.THIN);
-        wrapBorderStyle.setBorderRight(BorderStyle.THIN);
-        wrapBorderStyle.setVerticalAlignment(VerticalAlignment.TOP);
+	    // ===== BORDER =====
+	    CellStyle border = workbook.createCellStyle();
+	    border.setBorderTop(BorderStyle.THIN);
+	    border.setBorderBottom(BorderStyle.THIN);
+	    border.setBorderLeft(BorderStyle.THIN);
+	    border.setBorderRight(BorderStyle.THIN);
+	    border.setVerticalAlignment(VerticalAlignment.CENTER);
+	    styles.put("border", border);
 
-        styles.put("wrapBorder", wrapBorderStyle);
+	    // ===== HEADER + BORDER =====
+	    CellStyle headerBorder = workbook.createCellStyle();
+	    headerBorder.cloneStyleFrom(border);
+	    headerBorder.setFont(headerFont);
+	    styles.put("headerBorder", headerBorder);
 
+	    // ===== WRAP + BORDER =====
+	    CellStyle wrapBorder = workbook.createCellStyle();
+	    wrapBorder.cloneStyleFrom(border);
+	    wrapBorder.setWrapText(true);
+	    wrapBorder.setVerticalAlignment(VerticalAlignment.TOP);
+	    styles.put("wrapBorder", wrapBorder);
 
+	    return styles;
+	}
 
-        return styles;
-    }
 	
 	public void createCell(Row row, int col, Object value, Map<String, CellStyle> styles) {
 	    Cell cell = row.createCell(col);
@@ -107,79 +101,93 @@ public class ExcelServices {
 	    RegionUtil.setBorderRight(BorderStyle.THIN, region, sheet);
 	}
 	
+	public static Map<String, CellStyle> create(Workbook workbook) {
+        Map<String, CellStyle> styles = new HashMap<>();
+
+        CellStyle tableBorder = workbook.createCellStyle();
+        tableBorder.setBorderTop(BorderStyle.THIN);
+        tableBorder.setBorderBottom(BorderStyle.THIN);
+        tableBorder.setBorderLeft(BorderStyle.THIN);
+        tableBorder.setBorderRight(BorderStyle.THIN);
+        styles.put("tableBorder", tableBorder);
+
+        CellStyle headerBorder = workbook.createCellStyle();
+        headerBorder.cloneStyleFrom(tableBorder);
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerBorder.setFont(headerFont);
+        styles.put("headerBorder", headerBorder);
+
+        CellStyle bold = workbook.createCellStyle();
+        Font boldFont = workbook.createFont();
+        boldFont.setBold(true);
+        bold.setFont(boldFont);
+        styles.put("bold", bold);
+
+        return styles;
+    }
+	
 	public void createExcelContentItems(
 	        Sheet sheet,
 	        List<Item> items,
 	        String category,
 	        String categoryName,
-	        Map<String, CellStyle> styles
+	        Map<String, CellStyle> styles, Workbook workbook
 	) {
 
 	    int rowNum = 0;
 
-	    // ===== TITLE =====
-	    Row titleRow = sheet.createRow(rowNum++);
-	    Cell titleCell = titleRow.createCell(0);
-	    titleCell.setCellValue("Items");
-	    titleCell.setCellStyle(styles.get("title"));
-	    sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 3));
+	    rowNum = createTitleRow(
+                workbook,
+                sheet,
+                rowNum,
+                "Items",
+                0,
+                4
+        );
 
 	    rowNum++;
 
 	    // ===== CATEGORY =====
-	    Row categoryRow = sheet.createRow(rowNum++);
-	    categoryRow.createCell(0).setCellValue("Category:");
-	    categoryRow.createCell(1).setCellValue(categoryName);
-	    //categoryRow.createCell(1).setCellValue(
-	    //        category == null || category.isBlank() ? "All" : category);
+	    rowNum = createLabelValueRow(
+                sheet,
+                rowNum,
+                "Category:",
+                categoryName,
+                styles.get("bold")
+        );
 
 	    // ===== DATE =====
-	    Row dateRow = sheet.createRow(rowNum++);
-	    dateRow.createCell(0).setCellValue("Date:");
-	    dateRow.createCell(1).setCellValue(LocalDate.now().toString());
+	    rowNum = createLabelValueRow(
+                sheet,
+                rowNum,
+                "Date:",
+                LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")),
+                styles.get("bold")
+        );
 
 	    rowNum++;
 
 	    // ===== TABLE HEADER =====
-	    Row headerRow = sheet.createRow(rowNum++);
+	    String[] headers = {"Sl. No.", "Item", "", "Category", "Balance"};
 
-	 // Sl No
-	 Cell slCell = headerRow.createCell(0);
-	 slCell.setCellValue("Sl. No.");
-	 slCell.setCellStyle(styles.get("headerBorder"));
+        rowNum = createTableHeaderRow(
+                sheet,
+                rowNum,
+                headers,
+                styles.get("headerBorder")
+        );
+        int headerRowIndex = rowNum - 1;
 
-	 // Item (merged header)
-	 Cell itemHeaderCell = headerRow.createCell(1);
-	 itemHeaderCell.setCellValue("Item");
-	 itemHeaderCell.setCellStyle(styles.get("headerBorder"));
+       // merge columns 2 and 3
+       sheet.addMergedRegion(new CellRangeAddress(headerRowIndex, headerRowIndex, 1, 2));
 
-	 // Create empty Sub Item header cell (required before merge)
-	 Cell subItemHeaderCell = headerRow.createCell(2);
-	 subItemHeaderCell.setCellStyle(styles.get("headerBorder"));
-
-	 // Category
-	 Cell categoryCell = headerRow.createCell(3);
-	 categoryCell.setCellValue("Category");
-	 categoryCell.setCellStyle(styles.get("headerBorder"));
-
-	 // Balance
-	 Cell balanceCell = headerRow.createCell(4);
-	 balanceCell.setCellValue("Balance");
-	 balanceCell.setCellStyle(styles.get("headerBorder"));
-
-	 // ===== MERGE Item + Sub Item HEADER =====
-	 CellRangeAddress itemHeaderMerge =
-	         new CellRangeAddress(headerRow.getRowNum(),
-	                              headerRow.getRowNum(),
-	                              1, 2);
-
-	 sheet.addMergedRegion(itemHeaderMerge);
-
-	 RegionUtil.setBorderTop(BorderStyle.THIN, itemHeaderMerge, sheet);
-	 RegionUtil.setBorderBottom(BorderStyle.THIN, itemHeaderMerge, sheet);
-	 RegionUtil.setBorderLeft(BorderStyle.THIN, itemHeaderMerge, sheet);
-	 RegionUtil.setBorderRight(BorderStyle.THIN, itemHeaderMerge, sheet);
-
+       // ensure border style applies to merged cells
+       Row headerRow1 = sheet.getRow(headerRowIndex);
+       for (int col = 1; col <= 2; col++) {
+           headerRow1.getCell(col).setCellStyle(styles.get("headerBorder"));
+       }
+       
 	    int slNo = 1;
 
 	    for (Item item : items) {
@@ -297,7 +305,87 @@ public class ExcelServices {
 	    String val = balance.toString().trim();
 	    return val.isEmpty() ? "0" : val;
 	}
+	
+	public int createTitleRow(
+	        Workbook workbook,
+	        Sheet sheet,
+	        int rowIndex,
+	        String titleText,
+	        int mergeFromCol,
+	        int mergeToCol
+	) {
+	    Row titleRow = sheet.createRow(rowIndex);
+	    Cell titleCell = titleRow.createCell(mergeFromCol);
+	    titleCell.setCellValue(titleText);
 
+	    // Style
+	    CellStyle titleStyle = workbook.createCellStyle();
+	    Font titleFont = workbook.createFont();
+	    titleFont.setBold(true);
+	    titleFont.setFontHeightInPoints((short) 16);
+	    titleStyle.setFont(titleFont);
+	    titleStyle.setAlignment(HorizontalAlignment.CENTER);
+	    titleCell.setCellStyle(titleStyle);
+
+	    // Merge cells
+	    sheet.addMergedRegion(
+	            new CellRangeAddress(rowIndex, rowIndex, mergeFromCol, mergeToCol)
+	    );
+
+	    return rowIndex + 1; // return next row index
+	}
+
+	public int createLabelValueRow(
+	        Sheet sheet,
+	        int rowIndex,
+	        String label,
+	        String value,
+	        CellStyle labelStyle
+	) {
+	    Row row = sheet.createRow(rowIndex);
+
+	    Cell labelCell = row.createCell(0);
+	    labelCell.setCellValue(label);
+	    if (labelStyle != null) {
+	        labelCell.setCellStyle(labelStyle);
+	    }
+
+	    row.createCell(1).setCellValue(value);
+
+	    return rowIndex + 1;
+	}
+
+	public int createTableHeaderRow(
+	        Sheet sheet,
+	        int rowIndex,
+	        String[] headers,
+	        CellStyle headerStyle
+	) {
+	    Row headerRow = sheet.createRow(rowIndex);
+
+	    for (int i = 0; i < headers.length; i++) {
+	        Cell cell = headerRow.createCell(i);
+	        cell.setCellValue(headers[i]);
+	        if (headerStyle != null) {
+	            cell.setCellStyle(headerStyle);
+	        }
+	    }
+
+	    return rowIndex + 1;
+	}
+
+	public void mergeVertically(
+	        Sheet sheet,
+	        int startRow,
+	        int endRow,
+	        int col
+	) {
+	    if (startRow < endRow) {
+	        sheet.addMergedRegion(
+	                new CellRangeAddress(startRow, endRow, col, col)
+	        );
+	    }
+	}
 
 
 }

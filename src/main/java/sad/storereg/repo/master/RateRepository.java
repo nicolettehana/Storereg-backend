@@ -74,4 +74,8 @@ public interface RateRepository extends JpaRepository<Rate, Long>{
 	List<Rate> findByItemAndYearRange(Item item, YearRange yearRange);
 
     List<Rate> findBySubItemAndYearRange(SubItems subItem, YearRange yearRange);
+    
+    List<Rate> findByItem(Item item);
+
+    List<Rate> findBySubItem(SubItems subItem);
 }

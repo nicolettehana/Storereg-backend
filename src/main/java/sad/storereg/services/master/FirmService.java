@@ -497,38 +497,39 @@ public class FirmService {
 
         	int rowIdx = 0;
 
-        	// ===== TITLE =====
-        	Row titleRow = sheet.createRow(rowIdx++);
-        	Cell titleCell = titleRow.createCell(0);
-        	titleCell.setCellValue("Approved Firms");
-        	titleCell.setCellStyle(styles.get("title"));
-
-        	// Merge title across columns
-        	sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 2));
+        	rowIdx = excelService.createTitleRow(
+	                workbook,
+	                sheet,
+	                rowIdx,
+	                "Approved Firms",
+	                0,
+	                2
+	        );
         	rowIdx++; // blank row after title
 
-
+        	rowIdx = excelService.createLabelValueRow(
+	                sheet,
+	                rowIdx,
+	                "Year:",
+	                getYearText(firms),
+	                styles.get("bold")
+	        );
         	// ===== YEAR =====
-        	Row yearRow = sheet.createRow(rowIdx++);
-        	Cell yearLabel = yearRow.createCell(0);
-        	yearLabel.setCellValue("Year:");
-        	yearLabel.setCellStyle(styles.get("bold"));
-
-        	yearRow.createCell(1).setCellValue(getYearText(firms));
 
         	// ===== CATEGORY =====
-        	Row catRow = sheet.createRow(rowIdx++);
-        	Cell catLabel = catRow.createCell(0);
-        	catLabel.setCellValue("Category:");
-        	catLabel.setCellStyle(styles.get("bold"));
-
         	String cat = categoryCode;
         	if(categoryCode!=null && categoryCode!="") {
         		Optional<Category> category = categoryRepository.findByCode(categoryCode);
         		if(category.isPresent())
         			cat=category.get().getName();
         	}
-        	catRow.createCell(1).setCellValue((categoryCode==null || categoryCode.length()==0) ? "All" : cat);
+        	rowIdx = excelService.createLabelValueRow(
+	                sheet,
+	                rowIdx,
+	                "Category:",
+	                (categoryCode==null || categoryCode.length()==0) ? "All" : cat,
+	                styles.get("bold")
+	        );
         	
         	rowIdx++; // blank row after Category
 
@@ -543,14 +544,14 @@ public class FirmService {
         	rowIdx++; // blank row
 
         	// ===== TABLE HEADER =====
-        	Row headerRow = sheet.createRow(rowIdx++);
         	String[] headers = {"Sl No.", "Firm", "Category"};
 
-        	for (int i = 0; i < headers.length; i++) {
-        	    Cell cell = headerRow.createCell(i);
-        	    cell.setCellValue(headers[i]);
-        	    cell.setCellStyle(styles.get("headerBorder"));
-        	}
+            rowIdx = excelService.createTableHeaderRow(
+                    sheet,
+                    rowIdx,
+                    headers,
+                    styles.get("headerBorder")
+            );
 
         	// ===== TABLE DATA WITH MERGED CELLS =====
         	int slNo = 1;
@@ -633,37 +634,41 @@ public class FirmService {
             Map<String, CellStyle> styles = excelService.createStyles(workbook);
 
             int rowIdx = 0;
+            rowIdx = excelService.createTitleRow(
+	                workbook,
+	                sheet,
+	                rowIdx,
+	                "All Firms",
+	                0,
+	                2
+	        );
 
-            // ===== TITLE =====
-            Row titleRow = sheet.createRow(rowIdx++);
-            Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("All Firms");
-            titleCell.setCellStyle(styles.get("title"));
-
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 2));
             rowIdx++;
 
             // ===== GENERATED DATE =====
-            Row genRow = sheet.createRow(rowIdx++);
-            Cell genLabel = genRow.createCell(0);
-            genLabel.setCellValue("Generated on:");
-            genLabel.setCellStyle(styles.get("bold"));
-
-            genRow.createCell(1)
-                  .setCellValue(LocalDate.now()
-                          .format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+            
+            rowIdx = excelService.createLabelValueRow(
+	                sheet,
+	                rowIdx,
+	                "Generated on:",
+	                LocalDate.now()
+                    .format(DateTimeFormatter.ofPattern("dd-MM-yyyy")),
+	                styles.get("bold")
+	        );
 
             rowIdx++;
 
             // ===== TABLE HEADER =====
-            Row headerRow = sheet.createRow(rowIdx++);
+
             String[] headers = {"Sl. No.", "Firm", "Year Approved"};
 
-            for (int i = 0; i < headers.length; i++) {
-                Cell cell = headerRow.createCell(i);
-                cell.setCellValue(headers[i]);
-                cell.setCellStyle(styles.get("headerBorder"));
-            }
+            rowIdx = excelService.createTableHeaderRow(
+                    sheet,
+                    rowIdx,
+                    headers,
+                    styles.get("headerBorder")
+            );
+
 
             // ===== TABLE DATA =====
             int slNo = 1;

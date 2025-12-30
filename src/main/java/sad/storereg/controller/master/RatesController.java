@@ -1,9 +1,13 @@
 package sad.storereg.controller.master;
 
+import java.io.IOException;
+
 import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +28,8 @@ import sad.storereg.dto.master.ItemRateCreateDTO;
 import sad.storereg.dto.master.ItemRateDTO;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+
 
 
 @RestController
@@ -57,5 +63,21 @@ public class RatesController {
 			throw new BadRequestException("Invalid input");
         return ResponseEntity.ok(rateService.addRate(request));
 		//return ResponseEntity.ok("ok");
+    }
+	
+	@GetMapping({ "/export", "/export/{category}" })
+    public ResponseEntity<byte[]> exportFirms(
+    		@PathVariable(required = false) String category,
+    		@RequestParam(required = false) Integer yearRange
+    ) throws IOException {
+
+	    	byte[] excelData = rateService.exportRates(category, yearRange);
+	
+	        return ResponseEntity.ok()
+	                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=approved_firms.xlsx")
+	                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+	                .body(excelData);
+
+    	
     }
 }

@@ -1,5 +1,11 @@
 package sad.storereg.services.master;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -25,14 +31,20 @@ import sad.storereg.repo.master.ItemRepository;
 import sad.storereg.repo.master.RateRepository;
 import sad.storereg.repo.master.UnitRepository;
 import sad.storereg.repo.master.YearRangeRepository;
+import sad.storereg.services.appdata.ExcelServices;
 
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 @RequiredArgsConstructor
 @Service
@@ -43,6 +55,7 @@ public class RateService {
     private final YearRangeRepository yearRangeRepository;
     private final UnitRepository unitRepository;
     private final CategoryRepository categoryRepository;
+    private final ExcelServices excelService;
     
     public Page<ItemRateDTO> getRates(
             String categoryCode,
@@ -717,4 +730,196 @@ public class RateService {
         rateRepository.save(itemRate);
 		return("Rate added");
 	}
+	
+	public byte[] exportRates(String categoryCode, Integer yearRangeId) {
+
+	    YearRange yearRange = null;
+	    if (yearRangeId != null) {
+	        yearRange = yearRangeRepository.findById(yearRangeId)
+	                .orElseThrow(() -> new RuntimeException("YearRange not found"));
+	    }
+
+	    List<Item> items = (categoryCode != null && !categoryCode.isBlank())
+	            ? itemRepository.findAllByCategory_Code(categoryCode)
+	            : itemRepository.findAll();
+
+	    try (Workbook workbook = new XSSFWorkbook();
+	         ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+	        Sheet sheet = workbook.createSheet("Rates");
+	        Map<String, CellStyle> styles = excelService.createStyles(workbook);
+
+
+	        int rowIdx = 0;
+	        
+	        rowIdx = excelService.createTitleRow(
+	                workbook,
+	                sheet,
+	                rowIdx,
+	                "Rates",
+	                0,
+	                5
+	        );
+
+	        // =====================
+	        // METADATA
+	        // =====================
+	        rowIdx++;
+	        
+	        rowIdx = excelService.createLabelValueRow(
+	                sheet,
+	                rowIdx,
+	                "Year:",
+	                yearRange != null
+	                        ? yearRange.getStartYear() + " - " + yearRange.getEndYear()
+	                        : "All",
+	                styles.get("bold")
+	        );
+
+	        String categoryName = (categoryCode!=null && categoryCode.length()>0)? categoryRepository.findByCode(categoryCode).get().getName():"All";
+	        rowIdx = excelService.createLabelValueRow(
+	                sheet,
+	                rowIdx,
+	                "Category:",
+	                categoryName,
+	                styles.get("bold")
+	        );
+
+	        rowIdx++;
+
+	        // =====================
+	        // TABLE HEADER
+	        // =====================
+
+	        String[] headers = { "Sl No.", "Item","", "Category", "Unit", "Rate" };
+
+	        rowIdx = excelService.createTableHeaderRow(
+	                sheet,
+	                rowIdx,
+	                headers,
+	                styles.get("headerBorder")
+	        );
+	        int headerRowIndex = rowIdx - 1;
+
+	     // merge columns 2 and 3
+	     sheet.addMergedRegion(new CellRangeAddress(headerRowIndex, headerRowIndex, 1, 2));
+
+	     // ensure border style applies to merged cells
+	     Row headerRow1 = sheet.getRow(headerRowIndex);
+	     for (int col = 1; col <= 2; col++) {
+	         headerRow1.getCell(col).setCellStyle(styles.get("headerBorder"));
+	     }
+
+	        // =====================
+	        // TABLE DATA
+	        // =====================
+	     int slNo = 1;
+
+	     for (Item item : items) {
+
+	         // =====================
+	         // ITEM WITHOUT SUB-ITEMS
+	         // =====================
+	         if (item.getSubItems() == null || item.getSubItems().isEmpty()) {
+
+	             List<Rate> rates = yearRange != null
+	                     ? rateRepository.findByItemAndYearRange(item, yearRange)
+	                     : rateRepository.findByItem(item);
+
+	             for (Rate rate : rates) {
+	                 int currentRow = rowIdx;
+
+	                 Row row = sheet.createRow(rowIdx++);
+	                 row.createCell(0).setCellValue(slNo++);
+	                 row.createCell(1).setCellValue(item.getName());
+	                 row.createCell(2); // empty cell required for merge
+	                 row.createCell(3).setCellValue(item.getCategory().getName());
+	                 row.createCell(4).setCellValue(rate.getUnit().getName());
+	                 row.createCell(5).setCellValue(rate.getRate());
+	                 for (int col = 0; col <= 5; col++) {
+	                	    Cell cell = row.getCell(col);
+	                	    if (cell == null) {
+	                	        cell = row.createCell(col);
+	                	    }
+
+	                	    cell.setCellStyle(
+	                	        (col == 1 || col == 2)
+	                	            ? styles.get("wrapBorder")
+	                	            : styles.get("border")
+	                	    );
+	                	}
+
+	                 // merge cell 1 & 2 horizontally
+	                 CellRangeAddress region1 =
+	                	        new CellRangeAddress(currentRow, currentRow, 1, 2);
+
+	                	sheet.addMergedRegion(region1);
+	                	excelService.applyBorder(region1, sheet);
+	             }
+
+	             continue;
+	         }
+
+	         // =====================
+	         // ITEM WITH SUB-ITEMS
+	         // =====================
+	         int itemStartRow = rowIdx;
+	         int slNoForItem = slNo++;
+
+	         for (SubItems subItem : item.getSubItems()) {
+
+	             List<Rate> rates = yearRange != null
+	                     ? rateRepository.findBySubItemAndYearRange(subItem, yearRange)
+	                     : rateRepository.findBySubItem(subItem);
+
+	             for (Rate rate : rates) {
+	                 Row row = sheet.createRow(rowIdx++);
+
+	                 // Sl. No. & Item Name will be merged later
+	                 row.createCell(0).setCellValue(slNoForItem);
+	                 row.createCell(1).setCellValue(item.getName());
+	                 row.createCell(2).setCellValue(subItem.getName());
+	                 row.createCell(4).setCellValue(rate.getUnit().getName());
+	                 row.createCell(5).setCellValue(rate.getRate());
+	                 for (int col = 0; col <= 5; col++) {
+	                	    Cell cell = row.getCell(col);
+	                	    if (cell == null) {
+	                	        cell = row.createCell(col);
+	                	    }
+	                	 // wrap text only for item & sub-item columns
+	                	    if (col == 1 || col == 2) {
+	                	        cell.setCellStyle(styles.get("wrapBorder"));
+	                	    } else {
+	                	        cell.setCellStyle(styles.get("border"));
+	                	    }
+	                	}
+
+	             }
+	         }
+
+	         int itemEndRow = rowIdx - 1;
+
+	         // vertical merge Sl. No.
+	         excelService.mergeVertically(sheet, itemStartRow, itemEndRow, 0);
+
+	         // vertical merge Item Name
+	         excelService.mergeVertically(sheet, itemStartRow, itemEndRow, 1);
+	     }
+
+
+	        // =====================
+	        // AUTO SIZE
+	        // =====================
+	        for (int i = 0; i < headers.length; i++) {
+	            sheet.autoSizeColumn(i);
+	        }
+
+	        workbook.write(out);
+	        return out.toByteArray();
+
+	    } catch (IOException e) {
+	        throw new RuntimeException("Failed to export Excel", e);
+	    }
+	}
+
 }

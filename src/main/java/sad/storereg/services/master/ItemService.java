@@ -134,7 +134,7 @@ public class ItemService {
             Map<String, CellStyle> styles = excelService.createStyles(workbook);
 
             String categoryName = (category!=null && category.length()>0)?categoryRepository.findByCode(category).get().getName():"All";
-            excelService.createExcelContentItems(sheet, items, category, categoryName, styles);
+            excelService.createExcelContentItems(sheet, items, category, categoryName, styles, workbook);
 
             workbook.write(out);
             return out.toByteArray();
