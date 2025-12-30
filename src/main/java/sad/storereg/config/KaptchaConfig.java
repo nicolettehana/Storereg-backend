@@ -16,7 +16,7 @@ public class KaptchaConfig {
         DefaultKaptcha defaultKaptcha = new DefaultKaptcha();
         Properties properties = new Properties();
         
-        properties.setProperty("kaptcha.border", "yes");
+        properties.setProperty("kaptcha.border", "no");
         properties.setProperty("kaptcha.textproducer.font.color", "black");
         properties.setProperty("kaptcha.image.width", "200");
         properties.setProperty("kaptcha.image.height", "50");
@@ -27,6 +27,9 @@ public class KaptchaConfig {
         properties.setProperty("kaptcha.textproducer.font.names", "Arial");
         properties.setProperty("kaptcha.noise.color", "black");
         properties.setProperty("kaptcha.obscurificator.impl", "com.google.code.kaptcha.impl.WaterRipple");
+        properties.setProperty("kaptcha.background.clear.from", "217,229,243");
+        properties.setProperty("kaptcha.background.clear.to", "255,255,255");
+
 
         Config config = new Config(properties);
         defaultKaptcha.setConfig(config);
