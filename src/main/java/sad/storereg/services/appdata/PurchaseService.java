@@ -65,9 +65,12 @@ public class PurchaseService {
     }
 
 	private PurchaseResponseDTO convertToDTO(Purchase p) {
+		
+		
 
 	    PurchaseResponseDTO dto = new PurchaseResponseDTO();
 
+	    
 	    dto.setPurchaseId(p.getId());
 	    dto.setFirmName(p.getFirm().getFirm());
 	    dto.setRemarks(p.getRemarks());
@@ -99,6 +102,7 @@ public class PurchaseService {
 	                        itemDTO.setRate(pi.getRate());
 	                        itemDTO.setAmount(pi.getAmount());
 	                        itemDTO.setUnit(pi.getUnit().getUnit());
+	                        
 	                        return null;
 	                    }
 
@@ -108,6 +112,7 @@ public class PurchaseService {
 	                    sd.setRate(pi.getRate());
 	                    sd.setAmount(pi.getAmount());
 	                    sd.setUnit(pi.getUnit().getUnit());
+	                    
 	                    return sd;
 	                })
 	                .filter(Objects::nonNull)
@@ -116,8 +121,13 @@ public class PurchaseService {
 	        itemDTO.setSubItems(subItems);
 	        itemDTOs.add(itemDTO);
 	    }
+	    Double totalAmount = p.getItems()
+	            .stream()
+	            .mapToDouble(PurchaseItems::getAmount)
+	            .sum();
 
 	    dto.setItems(itemDTOs);
+	    dto.setTotalCost(totalAmount);
 	    return dto;
 	}
 	
