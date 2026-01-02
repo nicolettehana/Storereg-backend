@@ -14,7 +14,6 @@ public class PurchaseResponseDTO {
     private List<ItemPurchaseDTO> items;
     private Double totalCost;
     private String remarks;
-    private LocalDate date;
-    
+    private LocalDate date;  
 
 }

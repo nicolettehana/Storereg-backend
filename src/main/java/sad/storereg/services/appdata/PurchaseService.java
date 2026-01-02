@@ -1,7 +1,10 @@
 package sad.storereg.services.appdata;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +12,13 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +35,7 @@ import sad.storereg.models.master.Category;
 import sad.storereg.models.master.Firm;
 import sad.storereg.models.master.YearRange;
 import sad.storereg.repo.appdata.PurchaseRepository;
+import sad.storereg.repo.master.CategoryRepository;
 import sad.storereg.repo.master.FirmsRepository;
 import sad.storereg.repo.master.ItemRepository;
 import sad.storereg.repo.master.SubItemRepository;
@@ -50,6 +61,10 @@ public class PurchaseService {
 	
 	private final YearRangeRepository yearRangeRepository;
 	
+	private final ExcelServices excelService;
+	
+	private final CategoryRepository categoryRepository;
+	
 	public Page<PurchaseResponseDTO> searchPurchases(
             LocalDate startDate,
             LocalDate endDate,
@@ -66,10 +81,7 @@ public class PurchaseService {
 
 	private PurchaseResponseDTO convertToDTO(Purchase p) {
 		
-		
-
 	    PurchaseResponseDTO dto = new PurchaseResponseDTO();
-
 	    
 	    dto.setPurchaseId(p.getId());
 	    dto.setFirmName(p.getFirm().getFirm());
@@ -260,6 +272,232 @@ public class PurchaseService {
 		                category.getCode()
 		        );
 		return (purchases.size()>0?true:false);
+	}
+	
+	public byte[] exportPurchase(LocalDate startDate, LocalDate endDate, String categoryCode) {
+		System.out.println("Data2: "+startDate+" endDate: "+endDate+" "+categoryCode);
+		
+		List<Purchase> purchases = purchaseRepository.getPurchases(
+                startDate, endDate, categoryCode
+        );
+		
+        List<PurchaseResponseDTO> dtoList = purchases.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        System.out.println("Purchases: "+dtoList.size());
+        try (Workbook workbook = new XSSFWorkbook();
+                ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+               Sheet sheet = workbook.createSheet("Purchases");
+               Map<String, CellStyle> styles = excelService.createStyles(workbook);
+
+               int rowIdx = 0;
+
+               // =====================
+               // TITLE
+               // =====================
+               rowIdx = excelService.createTitleRow(
+                       workbook,
+                       sheet,
+                       rowIdx,
+                       "Purchases",
+                       0,
+                       10
+               );
+
+               rowIdx++;
+
+               // =====================
+               // METADATA
+               // =====================
+               rowIdx = excelService.createLabelValueRow(
+                       sheet,
+                       rowIdx,
+                       "Date:",
+                       startDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+                               + " to "
+                               + endDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")),
+                       styles.get("bold")
+               );
+
+               String categoryName = (categoryCode != null && !categoryCode.isEmpty())
+                       ? categoryRepository.findByCode(categoryCode).get().getName()
+                       : "All";
+
+               rowIdx = excelService.createLabelValueRow(
+                       sheet,
+                       rowIdx,
+                       "Category:",
+                       categoryName,
+                       styles.get("bold")
+               );
+
+               rowIdx++;
+
+               // =====================
+               // TABLE HEADER
+               // =====================
+               String[] headers = {
+                       "Sl No.",
+                       "Date of Purchase",
+                       "Firm",
+                       "Category",
+                       "Item",
+                       "",
+                       "Quantity",
+                       "Rate (₹)",
+                       "Amount (₹)",
+                       "Total",
+                       "Remarks"
+               };
+
+               rowIdx = excelService.createTableHeaderRow(
+                       sheet,
+                       rowIdx,
+                       headers,
+                       styles.get("headerBorder")
+               );
+               
+               int headerRowIndex = rowIdx - 1;
+               
+            // merge columns 2 and 3
+      	     sheet.addMergedRegion(new CellRangeAddress(headerRowIndex, headerRowIndex, 4, 5));
+
+      	     // ensure border style applies to merged cells
+      	     Row headerRow1 = sheet.getRow(headerRowIndex);
+      	     for (int col = 4; col <= 5; col++) {
+      	         headerRow1.getCell(col).setCellStyle(styles.get("headerBorder"));
+      	     }
+               // =====================
+               // TABLE DATA
+               // =====================
+               int slNo = 1;
+
+               for (PurchaseResponseDTO purchase : dtoList) {
+
+                   int purchaseStartRow = rowIdx;
+
+                   for (ItemPurchaseDTO item : purchase.getItems()) {
+
+                       // =====================
+                       // ITEM WITHOUT SUB-ITEMS
+                       // =====================
+                       if (item.getSubItems() == null || item.getSubItems().isEmpty()) {
+                    	   
+                    	   int itemStartRow = rowIdx;
+
+                           Row row = sheet.createRow(rowIdx++);
+
+                           row.createCell(0).setCellValue(slNo);
+                           row.createCell(1).setCellValue(purchase.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+                           row.createCell(2).setCellValue(purchase.getFirmName());
+                           row.createCell(3).setCellValue(item.getCategory());
+                           row.createCell(4).setCellValue(item.getItemName());
+                           row.createCell(6).setCellValue(item.getQuantity());
+                           row.createCell(7).setCellValue(item.getRate()+" "+item.getUnit());
+                           row.createCell(8).setCellValue(item.getAmount());
+                           row.createCell(9).setCellValue(purchase.getTotalCost());
+                           row.createCell(10).setCellValue(purchase.getRemarks());
+
+                        // styles + wrap
+                           for (int col = 0; col <= 10; col++) {
+                               Cell cell = row.getCell(col);
+                               if (cell == null) cell = row.createCell(col);
+
+                               cell.setCellStyle(
+                            		   (col == 2 || col == 4 || col == 9 || col == 10)
+                                               ? styles.get("wrapBorder")
+                                               : styles.get("border")
+                               );
+                           }
+
+                           row.setHeight((short) -1);
+                           
+                           int itemEndRow = rowIdx - 1;
+
+          	             // merge Item + SubItem horizontally
+          	             sheet.addMergedRegion(
+          	                     new CellRangeAddress(itemStartRow, itemEndRow, 4, 5)
+          	             );
+          	             excelService.applyBorder(
+          	                     new CellRangeAddress(itemStartRow, itemEndRow, 4, 5),
+          	                     sheet
+          	             );
+                       }
+
+                       // =====================
+                       // ITEM WITH SUB-ITEMS
+                       // =====================
+                       else {
+                    	   int itemStartRow = rowIdx;
+                    	   
+                           for (SubItemPurchaseDTO sub : item.getSubItems()) {
+
+                               Row row = sheet.createRow(rowIdx++);
+
+                               row.createCell(0).setCellValue(slNo);
+                               row.createCell(1).setCellValue(purchase.getDate().toString());
+                               row.createCell(2).setCellValue(purchase.getFirmName());
+                               row.createCell(3).setCellValue(item.getCategory());
+                               row.createCell(4).setCellValue(
+                                       item.getItemName()
+                               );
+                               row.createCell(5).setCellValue(sub.getSubItemName());
+                               row.createCell(6).setCellValue(sub.getQuantity());
+                               row.createCell(7).setCellValue(sub.getRate()+" "+sub.getUnit());
+                               row.createCell(8).setCellValue(sub.getAmount());
+                               row.createCell(9).setCellValue(purchase.getTotalCost());
+                               row.createCell(10).setCellValue(purchase.getRemarks());
+
+                               for (int col = 0; col <= 10; col++) {
+                                   Cell cell = row.getCell(col);
+                                   if (cell == null) cell = row.createCell(col);
+
+                                   cell.setCellStyle(
+                                           (col == 2 || col == 4 || col == 5 || col == 9 || col == 10)
+                                                   ? styles.get("wrapBorder")
+                                                   : styles.get("border")
+                                   );
+                               }
+
+                               row.setHeight((short) -1);
+                           }
+                           int itemEndRow = rowIdx - 1;
+
+                           // merge Item name vertically
+                           excelService.mergeVertically(sheet, itemStartRow, itemEndRow, 4);
+                           excelService.mergeVertically(sheet, itemStartRow, itemEndRow, 3);
+                       }
+                   }
+
+                   int purchaseEndRow = rowIdx - 1;
+
+                   // =====================
+                   // MERGES PER PURCHASE
+                   // =====================
+                   excelService.mergeVertically(sheet, purchaseStartRow, purchaseEndRow, 0); // Sl No
+                   excelService.mergeVertically(sheet, purchaseStartRow, purchaseEndRow, 1); // Date
+                   excelService.mergeVertically(sheet, purchaseStartRow, purchaseEndRow, 2); // Firm
+                   excelService.mergeVertically(sheet, purchaseStartRow, purchaseEndRow, 9); // Total
+                   excelService.mergeVertically(sheet, purchaseStartRow, purchaseEndRow, 10); // Remarks
+
+                   slNo++;
+               }
+
+               // =====================
+               // AUTO SIZE
+               // =====================
+               for (int i = 0; i < headers.length; i++) {
+                   sheet.autoSizeColumn(i);
+               }
+
+               workbook.write(out);
+               return out.toByteArray();
+
+           } catch (IOException e) {
+               throw new RuntimeException("Failed to export Purchases Excel", e);
+           }
+		
 	}
 
 

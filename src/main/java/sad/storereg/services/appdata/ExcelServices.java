@@ -101,6 +101,15 @@ public class ExcelServices {
 	    RegionUtil.setBorderRight(BorderStyle.THIN, region, sheet);
 	}
 	
+	public void applyBorder(Row row, Map<String, CellStyle> styles, int lastCol) {
+	    for (int col = 0; col <= lastCol; col++) {
+	        Cell cell = row.getCell(col);
+	        if (cell == null) cell = row.createCell(col);
+	        cell.setCellStyle(styles.get("border"));
+	    }
+	}
+
+	
 	public static Map<String, CellStyle> create(Workbook workbook) {
         Map<String, CellStyle> styles = new HashMap<>();
 

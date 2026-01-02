@@ -791,7 +791,7 @@ public class RateService {
 	        // TABLE HEADER
 	        // =====================
 
-	        String[] headers = { "Sl No.", "Item","", "Category", "Unit", "Rate" };
+	        String[] headers = { "Sl No.", "Item","", "Category", "Unit", "Rate (₹)" };
 
 	        rowIdx = excelService.createTableHeaderRow(
 	                sheet,
