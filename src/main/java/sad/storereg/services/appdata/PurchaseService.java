@@ -275,7 +275,6 @@ public class PurchaseService {
 	}
 	
 	public byte[] exportPurchase(LocalDate startDate, LocalDate endDate, String categoryCode) {
-		System.out.println("Data2: "+startDate+" endDate: "+endDate+" "+categoryCode);
 		
 		List<Purchase> purchases = purchaseRepository.getPurchases(
                 startDate, endDate, categoryCode
@@ -284,7 +283,7 @@ public class PurchaseService {
         List<PurchaseResponseDTO> dtoList = purchases.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
-        System.out.println("Purchases: "+dtoList.size());
+        
         try (Workbook workbook = new XSSFWorkbook();
                 ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
@@ -436,7 +435,7 @@ public class PurchaseService {
                                Row row = sheet.createRow(rowIdx++);
 
                                row.createCell(0).setCellValue(slNo);
-                               row.createCell(1).setCellValue(purchase.getDate().toString());
+                               row.createCell(1).setCellValue(purchase.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
                                row.createCell(2).setCellValue(purchase.getFirmName());
                                row.createCell(3).setCellValue(item.getCategory());
                                row.createCell(4).setCellValue(

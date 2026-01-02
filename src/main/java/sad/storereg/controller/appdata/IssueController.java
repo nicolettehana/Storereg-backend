@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,5 +47,20 @@ public class IssueController {
         return ResponseEntity.ok(issueService.saveIssue(purchaseDTO));
 
     }
+	
+	@GetMapping({ "/export", "/export/{categoryCode}" })
+	 public ResponseEntity<byte[]> exportPurchase(
+	 		 @PathVariable(required = false) String categoryCode,
+	  	        @RequestParam(defaultValue = "") LocalDate startDate,
+	  	        @RequestParam(defaultValue = "") LocalDate endDate
+	 ) {
+		 System.out.println("Data: "+categoryCode+" "+startDate+" "+endDate);
+	  	byte[] excelData = issueService.exportIssues(startDate, endDate, categoryCode);
+	  	
+	    return ResponseEntity.ok()
+	         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=issue_"+categoryCode+"_"+startDate+"-"+endDate+".xlsx")
+	         .contentType(MediaType.APPLICATION_OCTET_STREAM)
+	         .body(excelData);
+	 }
 
 }
