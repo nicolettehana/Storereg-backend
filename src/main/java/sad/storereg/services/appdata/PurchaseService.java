@@ -103,6 +103,7 @@ public class PurchaseService {
 
 	        // Set category (all grouped items have the same category)
 	        String category = entry.getValue().get(0).getItem().getCategory().getName();
+	        System.out.println("Purchase category: "+category);		
 	        itemDTO.setCategory(category);
 	        itemDTO.setCategoryCode( entry.getValue().get(0).getItem().getCategory().getCode());
 

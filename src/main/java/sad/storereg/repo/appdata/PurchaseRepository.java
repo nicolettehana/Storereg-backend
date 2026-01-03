@@ -230,9 +230,8 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 			    @Query("""
 			    	    SELECT DISTINCT p
 			    	    FROM Purchase p
-			    	    LEFT JOIN p.firm f
-			    	    LEFT JOIN p.items pi
-			    	    LEFT JOIN pi.item i
+			    	    JOIN FETCH p.items pi
+			    	    JOIN FETCH pi.item i
 			    	    WHERE p.date BETWEEN :startDate AND :endDate
 			    	      AND (:category IS NULL OR i.category.code = :category)
 			    	""")
@@ -241,5 +240,6 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 			    	        @Param("endDate") LocalDate endDate,
 			    	        @Param("category") String category
 			    	);
+
 
 }

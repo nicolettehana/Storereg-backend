@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import sad.storereg.annotations.Auditable;
 import sad.storereg.dto.master.UnitRateDTO;
 import sad.storereg.dto.master.UnitRequestDTO;
 import sad.storereg.exception.InternalServerError;
@@ -39,6 +40,7 @@ public class UnitController {
 		}
 	}
 	
+	@Auditable
 	@PostMapping("/rates")
 	public List<UnitRateDTO> getUnitsRates(@RequestBody UnitRequestDTO request) throws IOException {
 		try {
@@ -72,6 +74,7 @@ public class UnitController {
 		}
 	}
 	
+	@Auditable
 	@PostMapping
     public ResponseEntity<?> createUnit(@RequestBody Unit request) {
         return ResponseEntity.ok(masterDataServices.createUnit(request));

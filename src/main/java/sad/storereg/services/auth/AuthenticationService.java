@@ -83,7 +83,6 @@ public class AuthenticationService {
 	private final LoginRepository loginRepo;
 	private final CookieService cookieService;
 	private final CurrentUsersRepository currentUsersRepo;
-	private final OtpService otpService;
 	
 	@Value("${keys.dir}")
 	private String keysDir;
@@ -144,11 +143,11 @@ public class AuthenticationService {
 	    }
 
 	    // ✅ Generate OTP using existing service
-	    GetOtpResponseDTO otpResponse = otpService.sendOtpSignUp(httpRequest, username, "login");
+	    //GetOtpResponseDTO otpResponse = otpService.sendOtpSignUp(httpRequest, username, "login");
 
 	    return ResponseEntity.ok(Map.of(
-	        "message", "OTP sent successfully",
-	        "otpToken", otpResponse.getOtpToken()
+	        "message", "OTP sent successfully"
+	        //"otpToken", otpResponse.getOtpToken()
 	    ));
 	}
 

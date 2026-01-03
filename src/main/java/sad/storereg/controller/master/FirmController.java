@@ -55,6 +55,7 @@ public class FirmController {
         return firmService.getFirms(pageable, search, category);
     }
     
+    @Auditable
     @PostMapping
     public ResponseEntity<?> createFirm(@RequestBody CreateFirmDTO request) {
         
@@ -79,6 +80,7 @@ public class FirmController {
     		return firmService.getFirmsList();
     }
     
+    @Auditable
     @PostMapping("/add-approved")
     public ResponseEntity<?> createFirmYear(@RequestBody FirmYearDTO request) {
     	
@@ -110,6 +112,7 @@ public class FirmController {
     	}
     }
     
+    @Auditable
     @PostMapping("/update")
     public ResponseEntity<?> updateFirm(@RequestBody FirmsDTO request) {
         
@@ -139,6 +142,5 @@ public class FirmController {
 	                .body(excelData);
     	}
     }
-
 
 }

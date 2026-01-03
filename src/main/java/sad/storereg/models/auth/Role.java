@@ -14,10 +14,10 @@ import lombok.RequiredArgsConstructor;
 public enum Role {
 	
 	USER(Collections.emptySet()),
-	CH(Collections.emptySet()),
 	ADMIN(Collections.emptySet()),
 	SAD(Collections.emptySet()),
-	EST(Collections.emptySet())	
+	PUR(Collections.emptySet())	,
+	ISS(Collections.emptySet())	
 	;
 
 	  @Getter

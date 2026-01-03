@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import sad.storereg.annotations.Auditable;
 import sad.storereg.dto.appdata.CategoryCountDTO;
 import sad.storereg.dto.master.ItemDTO;
 import sad.storereg.models.master.Item;
@@ -57,7 +58,7 @@ public class ItemController {
         return itemService.getItemsList(search, category);
     }
 
-
+    @Auditable
     @PostMapping
     public ResponseEntity<?> createItem(@RequestBody ItemDTO request) {
       

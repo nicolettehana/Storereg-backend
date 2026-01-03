@@ -39,7 +39,6 @@ import sad.storereg.models.auth.User;
 import sad.storereg.repo.auth.UserRepository;
 import sad.storereg.services.appdata.CoreServices;
 import sad.storereg.services.auth.AuthenticationService;
-import sad.storereg.services.auth.OtpService;
 
 @RestController
 @RequestMapping(path = "/users")
@@ -50,7 +49,6 @@ public class UserController {
 	private final UserRepository userRepo;
 	private final AuthenticationService authService;
 	private final PasswordEncoder passwordEncoder;
-	private final OtpService otpService;
 	
 	@GetMapping("/profile")
 	public ResponseEntity<Map<String, Object>> getuserInfo(@AuthenticationPrincipal User user) {
@@ -73,8 +71,8 @@ public class UserController {
 			userInfo.put("name", user.getName());
 			userInfo.put("department", user.getDepartment());
 			userInfo.put("designation", user.getDesignation());
-			if(user.getOfficeCode()!=null)
-				userInfo.put("office", coreService.getOffice(user.getOfficeCode()).getOfficeName());
+//			if(user.getOfficeCode()!=null)
+//				userInfo.put("office", coreService.getOffice(user.getOfficeCode()).getOfficeName());
 
 			return new ResponseEntity<>(userInfo, HttpStatus.OK);
 
@@ -165,6 +163,7 @@ public class UserController {
 		}
 	}
 	
+	@Auditable
 	@PostMapping("/enable-disable")
 	public ResponseEntity<Map<String,Object>> enableDisable(@RequestBody Map<String, String> payload, @AuthenticationPrincipal User user) {
 		Map<String,Object> map=new HashMap<>();
@@ -190,6 +189,7 @@ public class UserController {
 		}
 	}
 	
+	@Auditable
 	@PostMapping("/send-otp-update-mobile")
 	public ResponseEntity<Map<String, Object>> sendOtpUpdateMobile(HttpServletRequest httpRequest, @Valid @RequestBody GetOtpRequestDTO request, @AuthenticationPrincipal User user) {
 		Map<String, Object> map = new HashMap<>();
@@ -197,8 +197,8 @@ public class UserController {
 				if (userRepo.findByUsername(authService.decryptPassword(request.getMobileno())).isPresent()) {
 					throw new UnauthorizedException("Mobile number already registered");
 				}
-				GetOtpResponseDTO res = otpService.sendOtpUpdateMobile(httpRequest, user, authService.decryptPassword(request.getMobileno()));
-				map.put("otpToken", res.getOtpToken());
+				//GetOtpResponseDTO res = otpService.sendOtpUpdateMobile(httpRequest, user, authService.decryptPassword(request.getMobileno()));
+				//map.put("otpToken", res.getOtpToken());
 				map.put("message", "OTP has been sent to mobile number "+ "******".concat(authService.decryptPassword(request.getMobileno()).substring(6)));
 				return new ResponseEntity<>(map, HttpStatus.OK);
 		} catch (UnauthorizedException|ObjectNotFoundException ex) {
@@ -220,10 +220,10 @@ public class UserController {
 				throw new UnauthorizedException("Mobile no. is already registered");
 			}
 			
-			if(otpService.verifyOTP(request.getOtp(), authService.decryptPassword(request.getMobileNo()), httpRequest, 0, request.getOtpToken().toString())) {
-				u.setMobileNo(authService.decryptPassword(request.getMobileNo()));
-				u.setUsername(authService.decryptPassword(request.getMobileNo()));
-			}
+//			if(otpService.verifyOTP(request.getOtp(), authService.decryptPassword(request.getMobileNo()), httpRequest, 0, request.getOtpToken().toString())) {
+//				u.setMobileNo(authService.decryptPassword(request.getMobileNo()));
+//				u.setUsername(authService.decryptPassword(request.getMobileNo()));
+//			}
 			//jwtService.invalidateToken(null, null);
 			map.put("detail", "Mobile no. updated");
 			return ResponseEntity.ok(map);

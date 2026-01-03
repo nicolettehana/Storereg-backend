@@ -2,12 +2,11 @@ package sad.storereg.config;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.HttpMethod.PUT;
 import static sad.storereg.models.auth.Role.ADMIN;
-import static sad.storereg.models.auth.Role.CH;
-import static sad.storereg.models.auth.Role.EST;
 import static sad.storereg.models.auth.Role.USER;
 import static sad.storereg.models.auth.Role.SAD;
+import static sad.storereg.models.auth.Role.PUR;
+import static sad.storereg.models.auth.Role.ISS;
 
 import java.util.List;
 
@@ -57,25 +56,15 @@ public class SecurityConfig {
 
 		.authorizeHttpRequests(auth -> auth .requestMatchers("/auth/**", "/csrf-token","/api/**","/my-report","/api2").permitAll() 
 				.requestMatchers(GET, "/users/get-user-info").hasAnyAuthority(USER.name(), ADMIN.name()) 
-				.requestMatchers(GET, "/menu","/status","/year-range","/items/**","/category/**","/firms/**","/unit/**","rates/**","/purchase/**","/issue/**","/stock/**","/ledger/**") .hasAnyAuthority(ADMIN.name(), CH.name(), USER.name(), EST.name(), SAD.name()) 
-				.requestMatchers(GET, "/users/profile") .hasAnyAuthority(ADMIN.name(), CH.name(), USER.name(), EST.name(), SAD.name()) 
-				.requestMatchers(POST, "/users/change-password","/users/update","/users/verify-otp-update-mobile","/users/send-otp-update-mobile","/verify-otp-login") .hasAnyAuthority(ADMIN.name(), CH.name(), USER.name(), EST.name()) 
-				.requestMatchers(POST, "/quarters","/vacate/**","/occupants/add","/allotment/occupy","/allotment/get-applicant-letter","/vacate-request/accept","/vacate-request/reject", "/occupants/add-quarter-occupant") .hasAnyAuthority(EST.name()) 
-				.requestMatchers(PUT, "/quarters/**","/enable-disable/**") .hasAnyAuthority(EST.name()) 
-				.requestMatchers(POST, "/firms/**","/items","/rates/**","/purchase/create","/issue/create","/year-range","/category/**","/unit").hasAnyAuthority(SAD.name())
-				.requestMatchers(GET, "/vacate-request/pending/**","/vacate-request/completed/**","/vacate-request/stats","/quarter-occupancy-status/**", "/quarters/full-details/**") .hasAnyAuthority(EST.name()) 
-				.requestMatchers(POST, "/application/upload-approval-order") .hasAnyAuthority(CH.name()) 
-				.requestMatchers(POST,"/eproposal-request","/eproposal-insert-allotment-status").hasAnyAuthority(USER.name(), CH.name()) 
-				.requestMatchers(POST, "/application","/application/cancel","/application/generate","/application/upload","/vacate-request").hasAnyAuthority(USER.name()) 
-				.requestMatchers(GET, "/application/summary","/vacate-request","/vacate-request/get-available-quarters").hasAnyAuthority(USER.name()) .requestMatchers(GET,"/application","/application/hey", "/application/download/**","/application/remarks/**").hasAnyAuthority(USER.name(), CH.name(),EST.name()) 
-				.requestMatchers(GET,"/audit-trail/**","/users/all/**").hasAnyAuthority(ADMIN.name()) .requestMatchers(POST,"/users/enable-disable/**").hasAnyAuthority(ADMIN.name()) .requestMatchers(POST,"/application/action","/allotment/order").hasAnyAuthority(USER.name(), CH.name(), EST.name()) .requestMatchers(POST,"/allotment/cancel").hasAnyAuthority( EST.name()) 
-				.requestMatchers(GET,"/departments","/districts","/blocks/**","/villages/**").hasAnyAuthority(CH.name(), EST.name()) .requestMatchers(GET, "/waiting-list","/waiting-list/approved/**","/waiting-list/applications/**","/quarter-types","/quarters/vacant/**","/quarters/**","/allotment/**", "/waiting-list/previous/**","/application/remarks-da/**","/quarters/vacant-reserved","/quarters/stats","/quarter-status") .hasAnyAuthority(CH.name(), EST.name()) 
-				.requestMatchers(GET, "/application/qc","/allotment/request/**","/allotment/pending","/application/bck","/eproposal-get-status/**").hasAnyAuthority(CH.name()) 
-				.requestMatchers(POST, "/application/all", "/allotment/letter","/allotment/completed","/allotment/order-upload","/allotment/order-final-upload").hasAnyAuthority(CH.name()) 
-				.requestMatchers(GET, "/app-history/**").hasAnyAuthority(CH.name()) 
-				.requestMatchers(POST, "/allotment/upload-decision-letter","/vacate-doucment","/vacate-document/upload**").hasAnyAuthority(EST.name(),USER.name()) 
-				.requestMatchers(GET, "/vacate-document/**").hasAnyAuthority(EST.name(),USER.name()) )
-		
+				.requestMatchers(GET, "/menu","/status","/year-range","/items/**","/category/**","/firms/**","/unit/**","rates/**","/purchase/**","/issue/**","/stock/**","/ledger/**") .hasAnyAuthority(ADMIN.name(), PUR.name(), USER.name(), ISS.name(), SAD.name()) 
+				.requestMatchers(GET, "/users/profile") .hasAnyAuthority(ADMIN.name(), PUR.name(), USER.name(), ISS.name(), SAD.name()) 
+				.requestMatchers(POST, "/users/change-password","/users/update","/users/verify-otp-update-mobile","/users/send-otp-update-mobile","/verify-otp-login") .hasAnyAuthority(ADMIN.name(), PUR.name(), SAD.name(), ISS.name()) 
+				.requestMatchers(POST, "/firms/**","/items","/rates/**","/year-range","/category/**","/unit").hasAnyAuthority(SAD.name())
+				.requestMatchers(POST, "/purchase/create").hasAnyAuthority(SAD.name(), PUR.name())
+				.requestMatchers(POST, "/issue/create").hasAnyAuthority(SAD.name(), ISS.name())
+				.requestMatchers(GET,"/audit-trail/**","/users/all/**").hasAnyAuthority(ADMIN.name()) 
+				.requestMatchers(POST,"/users/enable-disable/**").hasAnyAuthority(ADMIN.name()) 
+				 )
 				
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 				

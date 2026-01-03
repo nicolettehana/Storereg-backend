@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import sad.storereg.annotations.Auditable;
 import sad.storereg.dto.appdata.PurchaseCreateDTO;
 import sad.storereg.dto.appdata.PurchaseResponseDTO;
 import sad.storereg.services.appdata.PurchaseService;
@@ -42,6 +43,7 @@ public class PurchaseController {
 	     return purchaseService.searchPurchases(startDate, endDate, category, search, pageable);
 	 }
 	 
+	 @Auditable
 	 @PostMapping("/create")
 	 public ResponseEntity<String> savePurchase(@RequestBody PurchaseCreateDTO purchaseDTO) {
 

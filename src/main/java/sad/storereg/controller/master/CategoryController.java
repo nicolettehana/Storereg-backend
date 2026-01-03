@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import sad.storereg.annotations.Auditable;
 import sad.storereg.exception.InternalServerError;
 import sad.storereg.exception.UnauthorizedException;
 import sad.storereg.models.auth.User;
@@ -60,6 +61,7 @@ public class CategoryController {
         return response;
     }
 	
+	@Auditable
 	@PostMapping
     public ResponseEntity<?> createCategory(@RequestBody Category request) {
 		try {
@@ -73,6 +75,7 @@ public class CategoryController {
         
     }
 	
+	@Auditable
 	@PostMapping("/update")
     public ResponseEntity<?> updateCategory(@RequestBody Category request) {
 		try {

@@ -10,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 
 import sad.storereg.dto.appdata.CategoryCountDTO;
 import sad.storereg.models.master.Item;
-import sad.storereg.models.master.Quarters;
 
 public interface ItemRepository extends JpaRepository<Item, Long>{
 	

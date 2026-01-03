@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,19 +17,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import sad.storereg.models.master.Rate;
-import sad.storereg.models.master.SubItems;
-import sad.storereg.models.master.Item;
 import sad.storereg.services.master.RateService;
-import sad.storereg.dto.master.ItemDTO;
-import sad.storereg.dto.master.ItemMixin;
+import sad.storereg.annotations.Auditable;
 import sad.storereg.dto.master.ItemRateCreateDTO;
 import sad.storereg.dto.master.ItemRateDTO;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-
-
 
 @RestController
 @RequestMapping("/rates")
@@ -51,12 +41,14 @@ public class RatesController {
 
 	}
 	
+	@Auditable
 	@PostMapping
     public ResponseEntity<?> createRate(@RequestBody ItemRateCreateDTO request) {
         return ResponseEntity.ok(rateService.createRate(request));
 		//return ResponseEntity.ok("ok");
     }
 	
+	@Auditable
 	@PostMapping("/add")
     public ResponseEntity<?> addRate(@RequestBody ItemRateCreateDTO request) throws BadRequestException {
 		if(request.getItemId()==null || request.getRate()==null || request.getUnitId()==null || request.getYearRangeId()==null)

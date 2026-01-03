@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import sad.storereg.annotations.Auditable;
 import sad.storereg.models.master.YearRange;
 import sad.storereg.services.master.YearRangeService;
 
@@ -25,6 +26,7 @@ public class YearRangeController {
         return yearRangeService.getAllYearRanges();
     }
     
+    @Auditable
     @PostMapping
     public ResponseEntity<?> createYearRange(@RequestBody YearRange request) {
         return ResponseEntity.ok(yearRangeService.createYearRange(request));

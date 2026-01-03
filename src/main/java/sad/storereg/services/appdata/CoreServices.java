@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static sad.storereg.models.auth.Role.ADMIN;
-import static sad.storereg.models.auth.Role.CH;
 import static sad.storereg.models.auth.Role.USER;
 
 import java.util.HashMap;
@@ -13,38 +12,13 @@ import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import sad.storereg.exception.ObjectNotFoundException;
 import sad.storereg.models.auth.User;
-import sad.storereg.models.master.Blocks;
-import sad.storereg.models.master.Departments;
-import sad.storereg.models.master.Districts;
-import sad.storereg.models.master.Offices;
-import sad.storereg.models.master.QuarterPhysicalStatus;
-import sad.storereg.models.master.QuarterTypes;
-import sad.storereg.models.master.Villages;
 import sad.storereg.repo.auth.UserRepository;
-import sad.storereg.repo.master.ApplicationStatusRepository;
-import sad.storereg.repo.master.BlocksRepository;
-import sad.storereg.repo.master.DepartmentsRepository;
-import sad.storereg.repo.master.DistrictsRepository;
-import sad.storereg.repo.master.OfficesRepository;
-import sad.storereg.repo.master.QuarterPhysicalStatusRepository;
-import sad.storereg.repo.master.QuarterTypesRepository;
-import sad.storereg.repo.master.VillagesRepository;
-
 @Service
 @RequiredArgsConstructor
 public class CoreServices {
 	
-	private final ApplicationStatusRepository appStatusRepo;
-	private final QuarterTypesRepository quarterTypesRepo;
 	private final UserRepository userRepo;
-	private final DepartmentsRepository deptRepo;
-	private final OfficesRepository officeRepo;
-	private final DistrictsRepository districtRepo;
-	private final BlocksRepository blocksRepo;
-	private final VillagesRepository villagesRepo;
-	private final QuarterPhysicalStatusRepository physicalStatusRepo;
 	
 	public String getClientIp(HttpServletRequest request) {
 		String ipAddress = request.getHeader("X-Forwarded-For");
@@ -71,13 +45,6 @@ public class CoreServices {
 		return email;
 	}
 	
-	public String getStatus(Integer statusCode) {
-		return appStatusRepo.findByStatusCode(statusCode).getStatus();
-	}
-	
-	public String getAction(Integer statusCode) {
-		return appStatusRepo.findByStatusCode(statusCode).getAction();
-	}
 	
 	public Map<String,Object> isValidFilename(String originalFileName) {
 		Map<String, Object> responseMap = new HashMap<>();
@@ -109,10 +76,7 @@ public class CoreServices {
 		return responseMap;
 	}
 	
-	public String getQuarterType(String code) {
-		QuarterTypes quarterType = quarterTypesRepo.findByCode(code).orElseThrow(()-> new ObjectNotFoundException("Invalid quarter code"));
-		return quarterType.getQuarterType();
-	}
+	
 	
 	public String getRoleName(String username) {
 		try {
@@ -122,8 +86,6 @@ public class CoreServices {
 			if(user.isPresent()) {
 				if(user.get().getRole().equals(USER))
 					roleName="Applicant";
-				else if(user.get().getRole().equals(CH))
-					roleName="Department";
 				else if(user.get().getRole().equals(ADMIN))
 					roleName="Admin";
 			}
@@ -142,8 +104,6 @@ public class CoreServices {
 			if(user.isPresent()) {
 				if(user.get().getRole().equals(USER))
 					roleName="Applicant";
-				else if(user.get().getRole().equals(CH))
-					roleName="Department";
 				else if(user.get().getRole().equals(ADMIN))
 					roleName="Admin";
 			}
@@ -154,52 +114,4 @@ public class CoreServices {
 		}
 	}
 	
-	public Departments getDepartment(Integer deptCode) {
-		try {
-			return deptRepo.findByDeptCode(deptCode);
-		}catch(Exception ex) {
-			throw ex;
-		}
-	}
-	
-	public Offices getOffice(Integer officeCode) {
-		try {
-			return officeRepo.findByOfficeCode(officeCode).orElse(null);
-		}catch(Exception ex) {
-			throw ex;
-		}
-	}
-	
-	public Districts getDistrict(Integer districtCode) {
-		try {
-			return districtRepo.findByLgdCode(districtCode).orElse(null);
-		}catch(Exception ex) {
-			throw ex;
-		}
-	}
-	
-	public Blocks getBlock(Integer blockCode) {
-		try {
-			return blocksRepo.findByBlockCode(blockCode).orElse(null);
-		}catch(Exception ex) {
-			throw ex;
-		}
-	}
-	
-	public Villages getVillage(Integer villageCode) {
-		try {
-			return villagesRepo.findByVillageCode(villageCode).orElse(null);
-		}catch(Exception ex) {
-			throw ex;
-		}
-	}
-	
-	public QuarterPhysicalStatus getPhysicalStatus(Short physicalStatusCode) {
-		try {
-			return physicalStatusRepo.findById(physicalStatusCode).orElse(null);
-		}catch(Exception ex) {
-			throw ex;
-		}
-	}
-
 }

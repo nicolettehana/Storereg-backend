@@ -188,7 +188,7 @@ public class IssueService {
                        rowIdx,
                        "Issues",
                        0,
-                       8
+                       7
                );
 
                rowIdx++;
