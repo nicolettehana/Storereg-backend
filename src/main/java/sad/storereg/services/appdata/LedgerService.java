@@ -353,14 +353,23 @@ public class LedgerService {
 
 	             int itemEndRow = rowIdx - 1;
 
+	             if (itemEndRow >= itemStartRow) {
+	                 CellRangeAddress range =
+	                     new CellRangeAddress(itemStartRow, itemEndRow, 2, 3);
+
+	                 sheet.addMergedRegion(range);
+	                 excelService.applyBorder(range, sheet);
+	             }
+
+
 	             // merge Item + SubItem horizontally
-	             sheet.addMergedRegion(
-	                     new CellRangeAddress(itemStartRow, itemEndRow, 2, 3)
-	             );
-	             excelService.applyBorder(
-	                     new CellRangeAddress(itemStartRow, itemEndRow, 2, 3),
-	                     sheet
-	             );
+//	             sheet.addMergedRegion(
+//	                     new CellRangeAddress(itemStartRow, itemEndRow, 2, 3)
+//	             );
+//	             excelService.applyBorder(
+//	                     new CellRangeAddress(itemStartRow, itemEndRow, 2, 3),
+//	                     sheet
+//	             );
 
 	             // vertical merges
 	             excelService.mergeVertically(sheet, itemStartRow, itemEndRow, 0); // Sl No
