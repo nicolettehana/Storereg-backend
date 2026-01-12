@@ -64,7 +64,6 @@ public class PurchaseController {
 	  	        @RequestParam(defaultValue = "") LocalDate startDate,
 	  	        @RequestParam(defaultValue = "") LocalDate endDate
 	 ) {
-		 System.out.println("Data: "+categoryCode+" "+startDate+" "+endDate);
 	  	byte[] excelData = purchaseService.exportPurchase(startDate, endDate, categoryCode);
 	  	
 	    return ResponseEntity.ok()

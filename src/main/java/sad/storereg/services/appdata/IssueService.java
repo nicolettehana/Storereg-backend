@@ -228,7 +228,7 @@ public class IssueService {
                        "Date of Issue",
                        "Issued to",
                        "Category",
-                       "Item",
+                       "Particulars",
                        "",
                        "Quantity",
                        "Remarks"

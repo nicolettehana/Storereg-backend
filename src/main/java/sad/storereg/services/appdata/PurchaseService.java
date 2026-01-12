@@ -342,7 +342,7 @@ public class PurchaseService {
                        "Date of Purchase",
                        "Firm",
                        "Category",
-                       "Item",
+                       "Particulars",
                        "",
                        "Quantity",
                        "Rate (₹)",

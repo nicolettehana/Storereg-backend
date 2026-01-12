@@ -879,6 +879,7 @@ public class RateService {
 	                 row.createCell(0).setCellValue(slNoForItem);
 	                 row.createCell(1).setCellValue(item.getName());
 	                 row.createCell(2).setCellValue(subItem.getName());
+	                 row.createCell(3).setCellValue(item.getCategory().getName()); // ✅ FIX
 	                 row.createCell(4).setCellValue(rate.getUnit().getName());
 	                 row.createCell(5).setCellValue(rate.getRate());
 	                 for (int col = 0; col <= 5; col++) {
@@ -904,6 +905,7 @@ public class RateService {
 
 	         // vertical merge Item Name
 	         excelService.mergeVertically(sheet, itemStartRow, itemEndRow, 1);
+	         excelService.mergeVertically(sheet, itemStartRow, itemEndRow, 3);
 	     }
 
 

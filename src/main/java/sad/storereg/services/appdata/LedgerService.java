@@ -291,7 +291,7 @@ public class LedgerService {
 	        // TABLE HEADER
 	        // =====================
 
-	        String[] headers = { "Sl No.", "Category", "Item","", "Unit", "Opening Balance as on "+startDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")), "No. of Purchases", "No. of Issues", "Closing Blanace as on "+endDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) };
+	        String[] headers = { "Sl No.", "Category", "Particulars","", "Unit", "Opening Balance as on "+startDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")), "No. of Purchases", "No. of Issues", "Closing Blanace as on "+endDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) };
 
 	        rowIdx = excelService.createTableHeaderRow(
 	                sheet,
