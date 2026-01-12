@@ -14,6 +14,7 @@ public class PurchaseCreateDTO {
     private Double totalCost;
     private LocalDate issueDate;
     private String issueTo;
+    private String fileNo;
 
     private List<ItemCreatePurchaseDTO> items;
 

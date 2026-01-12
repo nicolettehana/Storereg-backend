@@ -38,11 +38,23 @@ public class Purchase {
     @Column(name = "entrydate")
     private LocalDateTime entryDate;
     
+    @Column(name = "file_no")
+    private String fileNo;
+    
     @Column(name = "remarks")
     private String remarks;
     
     @Column(name = "total_cost")
     private Double totalCost;
+    
+    @Column(name = "bill_no")
+    private String billNo;
+    
+    @Column(name = "bill_date", nullable = false)
+    private LocalDate billDate;
+    
+    @Column(name = "gst_percentage")
+    private Double gstPercentage;
     
     @OneToMany(mappedBy = "purchase", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PurchaseItems> items = new ArrayList<>();

@@ -15,5 +15,10 @@ public class PurchaseResponseDTO {
     private Double totalCost;
     private String remarks;
     private LocalDate date;  
+    private String fileNo;
+    private String billNo;
+    private LocalDate billDate;
+    private Double gstPercentage;
+    private Double gst;
 
 }

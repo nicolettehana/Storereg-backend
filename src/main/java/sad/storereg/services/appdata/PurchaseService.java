@@ -88,6 +88,11 @@ public class PurchaseService {
 	    dto.setRemarks(p.getRemarks());
 	    dto.setTotalCost(p.getTotalCost());
 	    dto.setDate(p.getDate());
+	    dto.setFileNo(p.getFileNo());
+	    dto.setBillNo(p.getBillNo());
+	    dto.setBillDate(p.getBillDate());
+	    dto.setGstPercentage(p.getGstPercentage());
+	    dto.setGst(p.getGstPercentage()!=null? (p.getGstPercentage()*p.getTotalCost())/100 : null);
 
 	    // Group items by item name
 	    Map<String, List<PurchaseItems>> itemGroup = p.getItems()
@@ -155,10 +160,9 @@ public class PurchaseService {
         purchase.setFirm(firm);
         purchase.setEntryDate(LocalDateTime.now());
         purchase.setRemarks(dto.getRemarks());
+        purchase.setFileNo(dto.getFileNo());
         //purchase.setTotalCost(dto.getTotalCost());
         
-        
-
      // Convert items
         List<PurchaseItems> items = dto.getItems().stream().map(itemDTO -> {
 
