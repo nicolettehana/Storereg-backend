@@ -29,8 +29,12 @@ public class YearRangeController {
     @Auditable
     @PostMapping
     public ResponseEntity<?> createYearRange(@RequestBody YearRange request) {
+    	try {
         return ResponseEntity.ok(yearRangeService.createYearRange(request));
 		//return ResponseEntity.ok("ok");
+    	}catch(Exception ex) {
+    		throw ex;
+    	}
     }
 
 }
