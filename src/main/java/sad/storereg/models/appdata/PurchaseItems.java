@@ -54,7 +54,10 @@ public class PurchaseItems {
     @Column(name = "gst_percentage")
     private Double gstPercentage;
     
-    @Column(name = "gst")
-    private Double gst;
+    @Column(name = "cgst")
+    private Double cgst;
+    
+    @Column(name = "sgst")
+    private Double sgst;
 
 }
