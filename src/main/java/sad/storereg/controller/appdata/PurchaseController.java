@@ -37,10 +37,11 @@ public class PurchaseController {
 	 	        @RequestParam(defaultValue = "10") int size,
 	 	        @RequestParam(defaultValue = "") String search,
 	 	        @RequestParam(defaultValue = "") LocalDate startDate,
-	 	        @RequestParam(defaultValue = "") LocalDate endDate
+	 	        @RequestParam(defaultValue = "") LocalDate endDate,
+	 	       @RequestParam(defaultValue = "") String status
 	 ) {
 	     Pageable pageable = PageRequest.of(page, size);
-	     return purchaseService.searchPurchases(startDate, endDate, category, search, pageable);
+	     return purchaseService.searchPurchases(startDate, endDate, category, search, status, pageable);
 	 }
 	 
 	 @Auditable

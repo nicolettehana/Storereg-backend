@@ -2,6 +2,8 @@ package sad.storereg.services.appdata;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -70,10 +72,11 @@ public class PurchaseService {
             LocalDate endDate,
             String category,
             String searchValue,
+            String status,
             Pageable pageable) {
 
         Page<Purchase> page = purchaseRepository.searchPurchases(
-                startDate, endDate, category, searchValue, pageable
+                startDate, endDate, category, searchValue, status, pageable
         );
 
         return page.map(this::convertToDTO);
@@ -92,8 +95,17 @@ public class PurchaseService {
 	    dto.setBillNo(p.getBillNo());
 	    dto.setBillDate(p.getBillDate());
 	    dto.setGstPercentage(p.getGstPercentage());
-	    dto.setGst(p.getGstPercentage()!=null? (p.getGstPercentage()*p.getTotalCost())/100 : null);
+	    //dto.setGst(p.getGstPercentage()!=null? (p.getGstPercentage()*p.getTotalCost())/100 : null);
+	    dto.setGst(
+	    	    p.getGstPercentage() != null
+	    	        ? BigDecimal.valueOf(p.getTotalCost())
+	    	            .multiply(BigDecimal.valueOf(p.getGstPercentage()))
+	    	            .divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP)
+	    	            .doubleValue()
+	    	        : null
+	    	);
 
+	    
 	    // Group items by item name
 	    Map<String, List<PurchaseItems>> itemGroup = p.getItems()
 	            .stream()
