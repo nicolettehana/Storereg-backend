@@ -60,7 +60,7 @@ public class SecurityConfig {
 				.requestMatchers(GET, "/users/profile") .hasAnyAuthority(ADMIN.name(), PUR.name(), USER.name(), ISS.name(), SAD.name()) 
 				.requestMatchers(POST, "/users/change-password","/users/update","/users/verify-otp-update-mobile","/users/send-otp-update-mobile","/verify-otp-login") .hasAnyAuthority(ADMIN.name(), PUR.name(), SAD.name(), ISS.name()) 
 				.requestMatchers(POST, "/firms/**","/items","/rates/**","/year-range","/category/**","/unit").hasAnyAuthority(SAD.name())
-				.requestMatchers(POST, "/purchase/create").hasAnyAuthority(SAD.name(), PUR.name())
+				.requestMatchers(POST, "/purchase/create","/purchase/receipt").hasAnyAuthority(SAD.name(), PUR.name())
 				.requestMatchers(POST, "/issue/create").hasAnyAuthority(SAD.name(), ISS.name())
 				.requestMatchers(GET,"/audit-trail/**","/users/all/**").hasAnyAuthority(ADMIN.name()) 
 				.requestMatchers(POST,"/users/enable-disable/**").hasAnyAuthority(ADMIN.name()) 

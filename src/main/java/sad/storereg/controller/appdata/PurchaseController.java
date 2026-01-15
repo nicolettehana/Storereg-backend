@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import sad.storereg.annotations.Auditable;
 import sad.storereg.dto.appdata.PurchaseCreateDTO;
+import sad.storereg.dto.appdata.PurchaseReceiptDTO;
 import sad.storereg.dto.appdata.PurchaseResponseDTO;
 import sad.storereg.services.appdata.PurchaseService;
 
@@ -49,6 +50,14 @@ public class PurchaseController {
 	 public ResponseEntity<String> savePurchase(@RequestBody PurchaseCreateDTO purchaseDTO) {
 
 	     return ResponseEntity.ok(purchaseService.savePurchase(purchaseDTO));
+	 }
+	 
+	 @Auditable
+	 @PostMapping("/receipt")
+	 public ResponseEntity<String> savePurchaseReceipt(@RequestBody PurchaseReceiptDTO purchaseDTO) {
+		 //System.out.println("Data: "+purchaseDTO);
+	     return ResponseEntity.ok(purchaseService.savePurchaseReceipt(purchaseDTO));
+		//return ResponseEntity.ok(null);
 	 }
 	 
 	 @GetMapping("/year/{year}")

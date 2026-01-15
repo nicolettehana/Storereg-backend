@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.function.Function;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -25,9 +26,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import sad.storereg.dto.appdata.ItemPurchaseDTO;
 import sad.storereg.dto.appdata.PurchaseCreateDTO;
+import sad.storereg.dto.appdata.PurchaseReceiptDTO;
+import sad.storereg.dto.appdata.PurchaseReceiptItems;
 import sad.storereg.dto.appdata.PurchaseResponseDTO;
 import sad.storereg.dto.appdata.SubItemPurchaseDTO;
 import sad.storereg.exception.ObjectNotFoundException;
@@ -35,6 +39,7 @@ import sad.storereg.models.appdata.Purchase;
 import sad.storereg.models.appdata.PurchaseItems;
 import sad.storereg.models.master.Category;
 import sad.storereg.models.master.Firm;
+import sad.storereg.models.master.SubItems;
 import sad.storereg.models.master.YearRange;
 import sad.storereg.repo.appdata.PurchaseRepository;
 import sad.storereg.repo.master.CategoryRepository;
@@ -120,10 +125,13 @@ public class PurchaseService {
 
 	        // Set category (all grouped items have the same category)
 	        String category = entry.getValue().get(0).getItem().getCategory().getName();
-	        System.out.println("Purchase category: "+category);		
+	        
 	        itemDTO.setCategory(category);
 	        itemDTO.setCategoryCode( entry.getValue().get(0).getItem().getCategory().getCode());
-
+	        itemDTO.setId(entry.getValue().get(0).getId());
+	        itemDTO.setItemId(entry.getValue().get(0).getItem().getId());
+	        itemDTO.setUnitId(entry.getValue().get(0).getUnit().getId());
+	        
 	        List<SubItemPurchaseDTO> subItems = entry.getValue()
 	                .stream()
 	                .map(pi -> {
@@ -142,6 +150,8 @@ public class PurchaseService {
 	                    sd.setRate(pi.getRate());
 	                    sd.setAmount(pi.getAmount());
 	                    sd.setUnit(pi.getUnit().getUnit());
+	                    sd.setSubItemId(pi.getSubItem().getId());
+	                    sd.setUnitId(pi.getUnit().getId());
 	                    
 	                    return sd;
 	                })
@@ -226,6 +236,63 @@ public class PurchaseService {
         // 4. Save (cascade saves items)
          purchaseRepository.save(purchase);
          return "Purchase added";
+    }
+	
+	@Transactional
+	public String savePurchaseReceipt(PurchaseReceiptDTO dto) {
+        // 1. Fetch Firm
+        Firm firm = firmRepository.findById(dto.getFirmId())
+                .orElseThrow(() -> new RuntimeException("Firm not found"));
+
+        Purchase purchase = purchaseRepository.findById(dto.getPurchaseId()).orElseThrow(() -> new RuntimeException("Purchase Order not found"));
+        // 2. Create Purchase entity
+        purchase.setBillDate(dto.getBillDate());
+        purchase.setFirm(firm);
+        purchase.setBillNo(dto.getBillNo());
+        purchase.setReceiptEntryDate(LocalDateTime.now());    
+        purchase.setTotalCost(dto.getTotalCost());
+        
+        // Fetch existing items
+        List<PurchaseItems> existingItems = purchase.getItems();
+
+        Map<Long, PurchaseItems> itemMap = existingItems.stream()
+                .collect(Collectors.toMap(PurchaseItems::getId, Function.identity()));
+
+        // Update items from DTO
+        for (PurchaseReceiptItems itemDTO : dto.getItems()) {
+
+            PurchaseItems item = itemMap.get(itemDTO.getId());
+
+            if (item == null) {
+                throw new RuntimeException(
+                        "PurchaseItem not found with id: " + itemDTO.getId()
+                );
+            }
+            if (item.getSubItem() == null) {
+                // 🔹 No sub-item → tax belongs to PurchaseItems
+                item.setGstPercentage(itemDTO.getGstPercentage());
+                item.setCgst(itemDTO.getCgst());
+                item.setSgst(itemDTO.getSgst());
+                item.setRate(itemDTO.getRate());
+	            item.setAmount(itemDTO.getAmount());
+
+            } else {
+                // 🔹 Sub-item exists → update SubItems tax
+                SubItems subItem = item.getSubItem();
+                
+
+                item.setGstPercentage(itemDTO.getSubItems().get(0).getGstPercentage());
+                item.setCgst(itemDTO.getSubItems().get(0).getCgst());
+                item.setSgst(itemDTO.getSubItems().get(0).getSgst());
+                item.setRate(itemDTO.getSubItems().get(0).getRate());
+                item.setAmount(itemDTO.getSubItems().get(0).getAmount());
+            }
+        }
+
+        // No explicit save of items needed
+        purchaseRepository.save(purchase);
+
+        return "Purchase Receipt updated successfully";
     }
 	
 	public int getAvailableBalance(Long itemId, Long subItemId, Integer unitId, LocalDate date) {

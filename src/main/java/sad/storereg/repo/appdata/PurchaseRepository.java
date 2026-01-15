@@ -2,6 +2,7 @@ package sad.storereg.repo.appdata;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -268,5 +269,6 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 			    	        @Param("category") String category
 			    	);
 
+			    Optional<Purchase> findById(Long purchaseId);
 
 }

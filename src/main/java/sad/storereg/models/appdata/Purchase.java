@@ -56,6 +56,9 @@ public class Purchase {
     @Column(name = "gst_percentage")
     private Double gstPercentage;
     
+    @Column(name = "receipt_entrydate")
+    private LocalDateTime receiptEntryDate;
+    
     @OneToMany(mappedBy = "purchase", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PurchaseItems> items = new ArrayList<>();
 

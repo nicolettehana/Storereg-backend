@@ -12,4 +12,8 @@ public class ItemCreatePurchaseDTO {
     private Integer quantity;
     private Double rate;
     private Double amount;
+    private Double gstPercentage;
+    private Double cgst;
+    private Double sgst;
+    private Long id;
 }

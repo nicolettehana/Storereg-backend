@@ -13,7 +13,9 @@ public class ItemPurchaseDTO {
     private Double rate;
     private Double amount;
     private String unit;
+    private Integer unitId;
     private String category;
     private String categoryCode;
-
+    private Long id;
+    private Long itemId;
 }

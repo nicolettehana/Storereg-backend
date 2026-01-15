@@ -15,6 +15,8 @@ public class PurchaseCreateDTO {
     private LocalDate issueDate;
     private String issueTo;
     private String fileNo;
+    private LocalDate billDate;
+    private String billNo;
 
     private List<ItemCreatePurchaseDTO> items;
 

@@ -10,5 +10,7 @@ public class SubItemPurchaseDTO {
     private Double rate;
     private Double amount;
     private String unit;
+    private Integer unitId;
+    private Long subItemId;
 
 }
