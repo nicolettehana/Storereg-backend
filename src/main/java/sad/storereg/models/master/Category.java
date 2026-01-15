@@ -26,5 +26,8 @@ public class Category {
 
     @Column(nullable = false)
     private String name;
+    
+    @Column(nullable = false, name="type")
+    private String stockType;
 
 }

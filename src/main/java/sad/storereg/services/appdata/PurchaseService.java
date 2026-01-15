@@ -130,7 +130,7 @@ public class PurchaseService {
 	        itemDTO.setCategoryCode( entry.getValue().get(0).getItem().getCategory().getCode());
 	        itemDTO.setId(entry.getValue().get(0).getId());
 	        itemDTO.setItemId(entry.getValue().get(0).getItem().getId());
-	        itemDTO.setUnitId(entry.getValue().get(0).getUnit().getId());
+	        itemDTO.setUnitId(entry.getValue().get(0).getUnit().getId());;
 	        
 	        List<SubItemPurchaseDTO> subItems = entry.getValue()
 	                .stream()
@@ -140,6 +140,9 @@ public class PurchaseService {
 	                        itemDTO.setRate(pi.getRate());
 	                        itemDTO.setAmount(pi.getAmount());
 	                        itemDTO.setUnit(pi.getUnit().getUnit());
+	                        itemDTO.setGstPercentage(pi.getGstPercentage());
+	                        itemDTO.setCgst(pi.getCgst());
+	                        itemDTO.setSgst(pi.getSgst());
 	                        
 	                        return null;
 	                    }
@@ -152,6 +155,9 @@ public class PurchaseService {
 	                    sd.setUnit(pi.getUnit().getUnit());
 	                    sd.setSubItemId(pi.getSubItem().getId());
 	                    sd.setUnitId(pi.getUnit().getId());
+	                    sd.setGstPercentage(pi.getGstPercentage());
+	                    sd.setCgst(pi.getCgst());
+	                    sd.setSgst(pi.getSgst());
 	                    
 	                    return sd;
 	                })

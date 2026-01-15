@@ -36,9 +36,14 @@ public class MasterDataServices {
 	
 	private final PurchaseService purchaseService;
 	
-	public List<Category> getCategories() {
+	public List<Category> getCategories(String stockType) {
 		try {
+			if(stockType!=null && stockType.length()==1)
+				return categoryRepo.findAllByStockType(stockType);
+				
+			else
 				return categoryRepo.findAll();
+				
 			}catch(Exception ex) {
 			throw ex;
 		}
@@ -130,6 +135,7 @@ public class MasterDataServices {
 	    	Category category  = new Category();
 	    	category.setName(request.getName());
 	    	category.setCode(request.getCode());
+	    	category.setStockType(request.getStockType());
 	    	categoryRepo.save(category);
 	    	return "Added successfully";
 		}catch(Exception ex) {

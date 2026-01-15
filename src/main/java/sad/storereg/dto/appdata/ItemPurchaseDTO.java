@@ -18,4 +18,7 @@ public class ItemPurchaseDTO {
     private String categoryCode;
     private Long id;
     private Long itemId;
+    private Double gstPercentage;
+    private Double cgst;
+    private Double sgst;
 }

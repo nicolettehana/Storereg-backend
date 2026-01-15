@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,14 +39,14 @@ public class CategoryController {
 	private final FirmsRepository firmRepo;
 	private final FirmYearRepository firmYearRepo;
 
-	@GetMapping
-	public List<Category> getCatagory(HttpServletRequest request, HttpServletResponse response , @AuthenticationPrincipal User user) throws IOException {
+	@GetMapping({ "", "/{stockType}" })
+	public List<Category> getCatagory(@PathVariable(required = false) String stockType,HttpServletRequest request, HttpServletResponse response , @AuthenticationPrincipal User user) throws IOException {
 		try {
-			return masterDataServices.getCategories();
+			return masterDataServices.getCategories(stockType);
 		} catch (UnauthorizedException ex) {
 			throw ex;
 		} catch (Exception ex) {
-			throw new InternalServerError("Unable to fetch menu", ex);
+			throw new InternalServerError("Unable to fetch categories", ex);
 		}
 	}
 	

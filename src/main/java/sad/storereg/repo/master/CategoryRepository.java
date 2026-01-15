@@ -15,6 +15,8 @@ public interface CategoryRepository extends JpaRepository<Category, String>{
 	
 	Optional<Category> findByCode(String code);
 	
+	List<Category> findAllByStockType(String stockType);
+	
 //	@Query("""
 //	        SELECT new com.example.dto.CategoryCountDTO(c.name, COUNT(f))
 //	        FROM Category c
