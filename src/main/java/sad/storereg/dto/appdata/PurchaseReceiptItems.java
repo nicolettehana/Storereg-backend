@@ -13,6 +13,7 @@ public class PurchaseReceiptItems {
 	private Double sgst;
 	private Double rate;
 	private Double amount;
+	private String itemName;
 	private List<PurchaseReceiptSubItems> subItems;
 
 }

@@ -11,6 +11,7 @@ public class PurchaseCreateDTO {
 	private String remarks;
     private LocalDate purchaseDate;
     private Long firmId;
+    private String receivedFrom;
     private Double totalCost;
     private LocalDate issueDate;
     private String issueTo;

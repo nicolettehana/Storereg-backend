@@ -262,11 +262,37 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 			    	    JOIN FETCH pi.item i
 			    	    WHERE p.date BETWEEN :startDate AND :endDate
 			    	      AND (:category IS NULL OR i.category.code = :category)
+			    	      AND (
+            :status = 'A'
+            OR (:status = 'P' AND p.billNo IS NULL)
+            OR (:status = 'R' AND p.billNo IS NOT NULL)
+          )
 			    	""")
 			    	List<Purchase> getPurchases(
 			    	        @Param("startDate") LocalDate startDate,
 			    	        @Param("endDate") LocalDate endDate,
-			    	        @Param("category") String category
+			    	        @Param("category") String category,
+			    	        @Param("status") String status
+			    	);
+			    
+			    @Query("""
+			    	    SELECT DISTINCT p
+			    	    FROM Purchase p
+			    	    JOIN FETCH p.items pi
+			    	    JOIN FETCH pi.item i
+			    	    WHERE p.billDate BETWEEN :startDate AND :endDate
+			    	      AND (:category IS NULL OR i.category.code = :category)
+			    	      AND (
+            :status = 'A'
+            OR (:status = 'P' AND p.billNo IS NULL)
+            OR (:status = 'R' AND p.billNo IS NOT NULL)
+          )
+			    	""")
+			    	List<Purchase> getPurchaseReceipts(
+			    	        @Param("startDate") LocalDate startDate,
+			    	        @Param("endDate") LocalDate endDate,
+			    	        @Param("category") String category,
+			    	        @Param("status") String status
 			    	);
 
 			    Optional<Purchase> findById(Long purchaseId);

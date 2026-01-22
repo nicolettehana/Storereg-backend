@@ -45,6 +45,20 @@ public class PurchaseController {
 	     return purchaseService.searchPurchases(startDate, endDate, category, search, status, pageable);
 	 }
 	 
+	 @GetMapping({ "/ns", "/ns/{category}" })
+	 public Page<PurchaseResponseDTO> getPaginatedNonStockPurchases(
+	 	 @PathVariable(required = false) String category,
+	 	        @RequestParam(defaultValue = "0") int page,
+	 	        @RequestParam(defaultValue = "10") int size,
+	 	        @RequestParam(defaultValue = "") String search,
+	 	        @RequestParam(defaultValue = "") LocalDate startDate,
+	 	        @RequestParam(defaultValue = "") LocalDate endDate,
+	 	       @RequestParam(defaultValue = "") String status
+	 ) {
+	     Pageable pageable = PageRequest.of(page, size);
+	     return purchaseService.searchNonStockPurchases(startDate, endDate, category, search, status, pageable);
+	 }
+	 
 	 @Auditable
 	 @PostMapping("/create")
 	 public ResponseEntity<String> savePurchase(@RequestBody PurchaseCreateDTO purchaseDTO) {
@@ -53,10 +67,25 @@ public class PurchaseController {
 	 }
 	 
 	 @Auditable
+	 @PostMapping("/create-ns")
+	 public ResponseEntity<String> savePurchaseNS(@RequestBody PurchaseCreateDTO purchaseDTO) {
+
+	     return ResponseEntity.ok(purchaseService.savePurchaseNS(purchaseDTO));
+	 }
+	 
+	 @Auditable
 	 @PostMapping("/receipt")
 	 public ResponseEntity<String> savePurchaseReceipt(@RequestBody PurchaseReceiptDTO purchaseDTO) {
 		 //System.out.println("Data: "+purchaseDTO);
 	     return ResponseEntity.ok(purchaseService.savePurchaseReceipt(purchaseDTO));
+		//return ResponseEntity.ok(null);
+	 }
+	 
+	 @Auditable
+	 @PostMapping("/receipt-ns")
+	 public ResponseEntity<String> savePurchaseReceiptNS(@RequestBody PurchaseReceiptDTO purchaseDTO) {
+		 //System.out.println("Data: "+purchaseDTO);
+	     return ResponseEntity.ok(purchaseService.savePurchaseReceiptNS(purchaseDTO));
 		//return ResponseEntity.ok(null);
 	 }
 	 
@@ -69,16 +98,61 @@ public class PurchaseController {
 	    }
 	 
 	 @GetMapping({ "/export", "/export/{categoryCode}" })
-	 public ResponseEntity<byte[]> exportPurchase(
+	 public ResponseEntity<byte[]> exportPurchaseOrders(
+	 		 @PathVariable(required = false) String categoryCode,
+	  	        @RequestParam(defaultValue = "") LocalDate startDate,
+	  	        @RequestParam(defaultValue = "") LocalDate endDate,
+	  	      @RequestParam(defaultValue = "A") String status
+	 ) {
+	  	byte[] excelData = purchaseService.exportPurchase(startDate, endDate, categoryCode, status);
+	  	
+	    return ResponseEntity.ok()
+	         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=purchase_orders_"+categoryCode+"_"+startDate+"-"+endDate+".xlsx")
+	         .contentType(MediaType.APPLICATION_OCTET_STREAM)
+	         .body(excelData);
+	 }
+	 
+	 @GetMapping({ "/export/receipts", "/export/receipts/{categoryCode}" })
+	 public ResponseEntity<byte[]> exportPurchaseReceipts(
 	 		 @PathVariable(required = false) String categoryCode,
 	  	        @RequestParam(defaultValue = "") LocalDate startDate,
 	  	        @RequestParam(defaultValue = "") LocalDate endDate
 	 ) {
-	  	byte[] excelData = purchaseService.exportPurchase(startDate, endDate, categoryCode);
+	  	byte[] excelData = purchaseService.exportPurchaseReceipts(startDate, endDate, categoryCode);
 	  	
 	    return ResponseEntity.ok()
-	         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=purchase_"+categoryCode+"_"+startDate+"-"+endDate+".xlsx")
+	         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=purchase_receipts_"+categoryCode+"_"+startDate+"-"+endDate+".xlsx")
 	         .contentType(MediaType.APPLICATION_OCTET_STREAM)
 	         .body(excelData);
 	 }
+	 
+	 @GetMapping({ "/export-ns", "/export-ns/{categoryCode}" })
+	 public ResponseEntity<byte[]> exportPurchaseOrdersNonStock(
+	 		 @PathVariable(required = false) String categoryCode,
+	  	        @RequestParam(defaultValue = "") LocalDate startDate,
+	  	        @RequestParam(defaultValue = "") LocalDate endDate,
+	  	      @RequestParam(defaultValue = "A") String status
+	 ) {
+	  	byte[] excelData = purchaseService.exportPurchaseOrdersNS(startDate, endDate, categoryCode, status);
+	  	
+	    return ResponseEntity.ok()
+	         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=purchase_orders_ns_"+categoryCode+"_"+startDate+"-"+endDate+".xlsx")
+	         .contentType(MediaType.APPLICATION_OCTET_STREAM)
+	         .body(excelData);
+	 }
+	 
+	 @GetMapping({ "/export/receipts-ns", "/export/receipts-ns/{categoryCode}" })
+	 public ResponseEntity<byte[]> exportPurchaseReceiptsNS(
+	 		 @PathVariable(required = false) String categoryCode,
+	  	        @RequestParam(defaultValue = "") LocalDate startDate,
+	  	        @RequestParam(defaultValue = "") LocalDate endDate
+	 ) {
+	  	byte[] excelData = purchaseService.exportPurchaseReceiptsNS(startDate, endDate, categoryCode);
+	  	
+	    return ResponseEntity.ok()
+	         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=purchase_receipts_ns_"+categoryCode+"_"+startDate+"-"+endDate+".xlsx")
+	         .contentType(MediaType.APPLICATION_OCTET_STREAM)
+	         .body(excelData);
+	 }
+	 
 }
