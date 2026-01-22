@@ -39,10 +39,11 @@ public class PurchaseController {
 	 	        @RequestParam(defaultValue = "") String search,
 	 	        @RequestParam(defaultValue = "") LocalDate startDate,
 	 	        @RequestParam(defaultValue = "") LocalDate endDate,
-	 	       @RequestParam(defaultValue = "") String status
+	 	       @RequestParam(defaultValue = "") String status,
+	 	       @RequestParam(defaultValue="PO") String type
 	 ) {
 	     Pageable pageable = PageRequest.of(page, size);
-	     return purchaseService.searchPurchases(startDate, endDate, category, search, status, pageable);
+	     return purchaseService.searchPurchases(startDate, endDate, category, search, status, type, pageable);
 	 }
 	 
 	 @GetMapping({ "/ns", "/ns/{category}" })
@@ -53,10 +54,11 @@ public class PurchaseController {
 	 	        @RequestParam(defaultValue = "") String search,
 	 	        @RequestParam(defaultValue = "") LocalDate startDate,
 	 	        @RequestParam(defaultValue = "") LocalDate endDate,
-	 	       @RequestParam(defaultValue = "") String status
+	 	       @RequestParam(defaultValue = "") String status,
+	 	      @RequestParam(defaultValue="PO") String type
 	 ) {
 	     Pageable pageable = PageRequest.of(page, size);
-	     return purchaseService.searchNonStockPurchases(startDate, endDate, category, search, status, pageable);
+	     return purchaseService.searchNonStockPurchases(startDate, endDate, category, search, status, type, pageable);
 	 }
 	 
 	 @Auditable

@@ -43,6 +43,32 @@ public interface PurchaseNonStockRepository extends JpaRepository<PurchaseNonSto
 	@Query("""
 		    SELECT DISTINCT p FROM PurchaseNonStock p
 		    JOIN p.items pi
+		    WHERE p.billDate BETWEEN :startDate AND :endDate
+		      AND (:category IS NULL OR pi.category = :category)
+		      AND (
+		            :searchValue IS NULL
+		            OR LOWER(p.receivedFrom) LIKE LOWER(CONCAT('%', :searchValue, '%'))
+		            OR LOWER(p.issueTo) LIKE LOWER(CONCAT('%', :searchValue, '%'))
+		            OR LOWER(pi.item) LIKE LOWER(CONCAT('%', :searchValue, '%'))
+		          )
+		      AND (
+		            :status = 'A'
+		            OR (:status = 'P' AND p.billNo IS NULL)
+		            OR (:status = 'R' AND p.billNo IS NOT NULL)
+		          )
+		""")
+		Page<PurchaseNonStock> searchPurchaseReceiptsNonStock(
+		        @Param("startDate") LocalDate startDate,
+		        @Param("endDate") LocalDate endDate,
+		        @Param("category") String category,
+		        @Param("searchValue") String searchValue,
+		        @Param("status") String status,
+		        Pageable pageable
+		);
+	
+	@Query("""
+		    SELECT DISTINCT p FROM PurchaseNonStock p
+		    JOIN p.items pi
 		    WHERE p.fileDate BETWEEN :startDate AND :endDate
 		      AND (:category IS NULL OR pi.category = :category)
 		      AND (

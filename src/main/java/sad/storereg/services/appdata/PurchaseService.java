@@ -83,11 +83,16 @@ public class PurchaseService {
             String category,
             String searchValue,
             String status,
+            String type,
             Pageable pageable) {
 
-        Page<Purchase> page = purchaseRepository.searchPurchases(
-                startDate, endDate, category, searchValue, status, pageable
-        );
+		Page<Purchase> page;
+		if(type.equals("PO"))
+				page = purchaseRepository.searchPurchases(
+                startDate, endDate, category, searchValue, status, pageable);
+		else
+			page = purchaseRepository.searchPurchaseReceipts(
+	                startDate, endDate, category, searchValue, status, pageable);
 
         return page.map(this::convertToDTO);
     }
@@ -1360,9 +1365,14 @@ public class PurchaseService {
             String category,
             String searchValue,
             String status,
+            String type,
             Pageable pageable) {
 
-        Page<PurchaseNonStock> page = purchaseNonStockRepository.searchPurchaseNonStock(startDate, endDate, category, searchValue, status, pageable);
+        Page<PurchaseNonStock> page;
+        if(type.equals("PO"))
+        	page= purchaseNonStockRepository.searchPurchaseNonStock(startDate, endDate, category, searchValue, status, pageable);
+        else
+        	page = purchaseNonStockRepository.searchPurchaseReceiptsNonStock(startDate, endDate, category, searchValue, status, pageable);
 
         return page.map(this::convertToDTONonStock);
     }
