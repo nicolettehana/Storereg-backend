@@ -14,6 +14,7 @@ public class PurchaseReceiptItems {
 	private Double rate;
 	private Double amount;
 	private String itemName;
+	private Long itemId;
 	private List<PurchaseReceiptSubItems> subItems;
 
 }

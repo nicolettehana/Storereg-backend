@@ -32,6 +32,7 @@ import sad.storereg.dto.appdata.ItemPurchaseDTO;
 import sad.storereg.dto.appdata.PurchaseCreateDTO;
 import sad.storereg.dto.appdata.PurchaseReceiptDTO;
 import sad.storereg.dto.appdata.PurchaseReceiptItems;
+import sad.storereg.dto.appdata.PurchaseReceiptSubItems;
 import sad.storereg.dto.appdata.PurchaseResponseDTO;
 import sad.storereg.dto.appdata.SubItemPurchaseDTO;
 import sad.storereg.exception.ObjectNotFoundException;
@@ -293,63 +294,77 @@ public class PurchaseService {
 	
 	@Transactional
 	public String savePurchaseReceipt(PurchaseReceiptDTO dto) {
-        // 1. Fetch Firm
-        Firm firm = firmRepository.findById(dto.getFirmId())
-                .orElseThrow(() -> new RuntimeException("Firm not found"));
 
-        Purchase purchase = purchaseRepository.findById(dto.getPurchaseId()).orElseThrow(() -> new RuntimeException("Purchase Order not found"));
-        // 2. Create Purchase entity
-        purchase.setBillDate(dto.getBillDate());
-        purchase.setFirm(firm);
-        purchase.setBillNo(dto.getBillNo());
-        purchase.setReceiptEntryDate(LocalDateTime.now());    
-        purchase.setTotalCost(dto.getTotalCost());
-        Double gst = 0.0;;
-        
-        // Fetch existing items
-        List<PurchaseItems> existingItems = purchase.getItems();
+	    Firm firm = firmRepository.findById(dto.getFirmId())
+	            .orElseThrow(() -> new RuntimeException("Firm not found"));
 
-        Map<Long, PurchaseItems> itemMap = existingItems.stream()
-                .collect(Collectors.toMap(PurchaseItems::getId, Function.identity()));
+	    Purchase purchase = purchaseRepository.findById(dto.getPurchaseId())
+	            .orElseThrow(() -> new RuntimeException("Purchase Order not found"));
 
-        // Update items from DTO
-        for (PurchaseReceiptItems itemDTO : dto.getItems()) {
+	    purchase.setBillDate(dto.getBillDate());
+	    purchase.setFirm(firm);
+	    purchase.setBillNo(dto.getBillNo());
+	    purchase.setReceiptEntryDate(LocalDateTime.now());
+	    purchase.setTotalCost(dto.getTotalCost());
 
-            PurchaseItems item = itemMap.get(itemDTO.getId());
+	    double gst = 0.0;
 
-            if (item == null) {
-                throw new RuntimeException(
-                        "PurchaseItem not found with id: " + itemDTO.getId()
-                );
-            }
-            if (item.getSubItem() == null) {
-                // 🔹 No sub-item → tax belongs to PurchaseItems
-                item.setGstPercentage(itemDTO.getGstPercentage());
-                item.setCgst(itemDTO.getCgst());
-                item.setSgst(itemDTO.getSgst());
-                item.setRate(itemDTO.getRate());
+	    // Group existing PurchaseItems by itemId
+	    Map<Long, List<PurchaseItems>> itemsByItemId =
+	            purchase.getItems().stream()
+	                    .collect(Collectors.groupingBy(pi -> pi.getItem().getId()));
+
+	    for (PurchaseReceiptItems itemDTO : dto.getItems()) {
+
+	    	List<PurchaseItems> dbItems = itemsByItemId.get(itemDTO.getItemId());
+
+	    	if (dbItems == null || dbItems.isEmpty()) {
+	    	    throw new RuntimeException(
+	    	        "PurchaseItems not found for itemId: " + itemDTO.getItemId()
+	    	    );
+	    	}
+	        // 🔹 CASE: subItems present → multiple PurchaseItems rows
+	        if (itemDTO.getSubItems() != null && !itemDTO.getSubItems().isEmpty()) {
+
+	            int limit = Math.min(dbItems.size(), itemDTO.getSubItems().size());
+
+	            for (int i = 0; i < limit; i++) {
+
+	                PurchaseItems item = dbItems.get(i);
+	                PurchaseReceiptSubItems subDTO = itemDTO.getSubItems().get(i);
+
+	                if(subDTO.getGstPercentage()!=null)
+	                	item.setGstPercentage(Double.valueOf(subDTO.getGstPercentage()));
+	                item.setCgst(subDTO.getCgst());
+	                item.setSgst(subDTO.getSgst());
+	                item.setRate(subDTO.getRate());
+	                item.setAmount(subDTO.getAmount());
+
+	                gst += subDTO.getCgst() + subDTO.getSgst();
+	            }
+	        }
+	        // 🔹 CASE: no subItems → single PurchaseItem
+	        else {
+
+	            PurchaseItems item = dbItems.get(0);
+
+	            item.setGstPercentage(itemDTO.getGstPercentage());
+	            item.setCgst(itemDTO.getCgst());
+	            item.setSgst(itemDTO.getSgst());
+	            item.setRate(itemDTO.getRate());
 	            item.setAmount(itemDTO.getAmount());
-	            gst = gst +itemDTO.getSgst()+itemDTO.getCgst();
-	            
 
-            } else {
-                // 🔹 Sub-item exists → update SubItems tax
-                SubItems subItem = item.getSubItem();
-                
+	            gst += itemDTO.getCgst() + itemDTO.getSgst();
+	        }
+	    }
 
-                item.setGstPercentage(itemDTO.getSubItems().get(0).getGstPercentage());
-                item.setCgst(itemDTO.getSubItems().get(0).getCgst());
-                item.setSgst(itemDTO.getSubItems().get(0).getSgst());
-                item.setRate(itemDTO.getSubItems().get(0).getRate());
-                item.setAmount(itemDTO.getSubItems().get(0).getAmount());
-                gst = gst +itemDTO.getSubItems().get(0).getSgst()+itemDTO.getSubItems().get(0).getCgst();
-            }
-        }
-        purchase.setGst(gst);        // No explicit save of items needed
-        purchaseRepository.save(purchase);
+	    purchase.setGst(gst);
+	    purchaseRepository.save(purchase);
 
-        return "Purchase Receipt updated successfully";
-    }
+	    return "Purchase Receipt updated successfully";
+	}
+
+
 	
 	@Transactional
 	public String savePurchaseReceiptNS(PurchaseReceiptDTO dto) {
@@ -401,7 +416,7 @@ public class PurchaseService {
             gst = gst + itemDTO.getCgst()+itemDTO.getSgst();
         }
 
-
+        purchase.setGst(gst);
         // No explicit save of items needed
         purchaseNonStockRepository.save(purchase);
 
@@ -1182,7 +1197,7 @@ public class PurchaseService {
                    rowIdx,
                    "Purchases Receipts (Non-Stock)",
                    0,
-                   10
+                   9
            );
 
            rowIdx++;
@@ -1228,7 +1243,7 @@ public class PurchaseService {
                    "Rate (₹)",
                    "Amount (₹)",
                    "Total",
-                   "Remarks"
+                   //"Remarks"
            };
 
            rowIdx = excelService.createTableHeaderRow(
@@ -1275,18 +1290,21 @@ public class PurchaseService {
                        row.createCell(4).setCellValue(item.getCategory());
                        row.createCell(5).setCellValue(item.getItemName());
                        row.createCell(6).setCellValue(item.getQuantity());
-                       row.createCell(7).setCellValue(item.getRate()+" "+item.getUnit());
-                       row.createCell(8).setCellValue(item.getAmount());
+                       String gst = item.getGstPercentage()==null?"":("( GST: "+item.getGstPercentage()+"%)");
+                       row.createCell(7).setCellValue(item.getRate()+" "+item.getUnit()+gst);
+                       String gstText = item.getGstPercentage()==null?"":" (+GST: ₹"+(item.getCgst()+item.getSgst())+")";
+                       row.createCell(8).setCellValue("₹"+item.getAmount()+gstText);
+                       //Double tot = purchase.getTotalCost()+(purchase.getGst()==null?0:purchase.getGst());
                        row.createCell(9).setCellValue(purchase.getTotalCost());
-                       row.createCell(10).setCellValue(purchase.getRemarks());
+                       //row.createCell(10).setCellValue(purchase.getRemarks());
 
                     // styles + wrap
-                       for (int col = 0; col <= 10; col++) {
+                       for (int col = 0; col <= 9; col++) {
                            Cell cell = row.getCell(col);
                            if (cell == null) cell = row.createCell(col);
 
                            cell.setCellStyle(
-                        		   (col == 2 || col == 4 || col == 9 || col == 10)
+                        		   (col == 2 || col == 4 || col == 9 )
                                            ? styles.get("wrapBorder")
                                            : styles.get("border")
                            );
@@ -1325,6 +1343,7 @@ public class PurchaseService {
                                    item.getItemName()
                            );
                            row.createCell(6).setCellValue(sub.getQuantity());
+                           //String gst = item.getGstPercentage()==null?"":(" GST: "+item.getGstPercentage()+"%");
                            row.createCell(7).setCellValue(sub.getRate()+" "+sub.getUnit());
                            row.createCell(8).setCellValue(sub.getAmount());
                            row.createCell(9).setCellValue(purchase.getTotalCost());
@@ -1360,7 +1379,7 @@ public class PurchaseService {
                excelService.mergeVertically(sheet, purchaseStartRow, purchaseEndRow, 1); // Date
                excelService.mergeVertically(sheet, purchaseStartRow, purchaseEndRow, 2); // Firm
                excelService.mergeVertically(sheet, purchaseStartRow, purchaseEndRow, 9); // Total
-               excelService.mergeVertically(sheet, purchaseStartRow, purchaseEndRow, 10); // Remarks
+               //excelService.mergeVertically(sheet, purchaseStartRow, purchaseEndRow, 10); // Remarks
 
                slNo++;
            }
@@ -1445,12 +1464,13 @@ public class PurchaseService {
 	    // Calculate total safely from items
 	    
 	    if(dto.getBillNo()!=null) {
-		    Double totalAmount = itemDTOs.stream()
-		            .mapToDouble(ItemPurchaseDTO::getAmount)
-		            .sum();
-	
-		    dto.setTotalCost(totalAmount);
-	    }
+//		    Double totalAmount = itemDTOs.stream()
+//		            .mapToDouble(ItemPurchaseDTO::getAmount)
+//		            .sum();
+//	
+//		    dto.setTotalCost(totalAmount);
+	    	dto.setTotalCost(p.getTotal());
+	    	}
 
 	    return dto;
 	}
