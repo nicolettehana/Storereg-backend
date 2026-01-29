@@ -108,8 +108,10 @@ public class PurchaseService {
 	    dto.setDate(p.getDate());
 	    dto.setFileNo(p.getFileNo());
 	    dto.setBillNo(p.getBillNo());
+	    System.out.println("Bill no.:"+p.getBillNo()+" Bill date: "+p.getBillDate());
 	    dto.setBillDate(p.getBillDate());
 	    dto.setGstPercentage(p.getGstPercentage());
+	    
 	    //dto.setGst(p.getGstPercentage()!=null? (p.getGstPercentage()*p.getTotalCost())/100 : null);
 	    dto.setGst(
 	    	    p.getGstPercentage() != null
@@ -119,6 +121,7 @@ public class PurchaseService {
 	    	            .doubleValue()
 	    	        : null
 	    	);
+	    dto.setGst(p.getGst());
 
 	    
 	    // Group items by item name
@@ -301,6 +304,7 @@ public class PurchaseService {
         purchase.setBillNo(dto.getBillNo());
         purchase.setReceiptEntryDate(LocalDateTime.now());    
         purchase.setTotalCost(dto.getTotalCost());
+        Double gst = 0.0;;
         
         // Fetch existing items
         List<PurchaseItems> existingItems = purchase.getItems();
@@ -325,6 +329,8 @@ public class PurchaseService {
                 item.setSgst(itemDTO.getSgst());
                 item.setRate(itemDTO.getRate());
 	            item.setAmount(itemDTO.getAmount());
+	            gst = gst +itemDTO.getSgst()+itemDTO.getCgst();
+	            
 
             } else {
                 // 🔹 Sub-item exists → update SubItems tax
@@ -336,10 +342,10 @@ public class PurchaseService {
                 item.setSgst(itemDTO.getSubItems().get(0).getSgst());
                 item.setRate(itemDTO.getSubItems().get(0).getRate());
                 item.setAmount(itemDTO.getSubItems().get(0).getAmount());
+                gst = gst +itemDTO.getSubItems().get(0).getSgst()+itemDTO.getSubItems().get(0).getCgst();
             }
         }
-
-        // No explicit save of items needed
+        purchase.setGst(gst);        // No explicit save of items needed
         purchaseRepository.save(purchase);
 
         return "Purchase Receipt updated successfully";
@@ -356,7 +362,8 @@ public class PurchaseService {
         purchase.setBillNo(dto.getBillNo());
         purchase.setReceiptDate(LocalDate.now()); 
         purchase.setTotal(dto.getTotalCost());
-        purchase.setIssueTo(dto.getIssuedTo());;
+        purchase.setIssueTo(dto.getIssuedTo());
+        Double gst=0.0;
         
         // Fetch existing items
         List<PurchaseItemNonStock> existingItems = purchase.getItems();
@@ -391,6 +398,7 @@ public class PurchaseService {
             item.setGstPercentage(itemDTO.getGstPercentage());
             item.setCgst(itemDTO.getCgst());
             item.setSgst(itemDTO.getSgst());
+            gst = gst + itemDTO.getCgst()+itemDTO.getSgst();
         }
 
 
@@ -757,7 +765,7 @@ public class PurchaseService {
                        "Quantity",
                        "Rate (₹)",
                        "Amount (₹)",
-                       "Total",
+                       "Total (₹)",
                        "Remarks"
                };
 
@@ -804,9 +812,19 @@ public class PurchaseService {
                            row.createCell(3).setCellValue(item.getCategory());
                            row.createCell(4).setCellValue(item.getItemName());
                            row.createCell(6).setCellValue(item.getQuantity());
-                           row.createCell(7).setCellValue(item.getRate()+" "+item.getUnit());
-                           row.createCell(8).setCellValue(item.getAmount());
-                           row.createCell(9).setCellValue(purchase.getTotalCost());
+                           String gstText = item.getGstPercentage()!=null?(" ( GST: "+item.getGstPercentage()+"%)"):"";
+                           row.createCell(7).setCellValue(item.getRate()+" "+item.getUnit()+gstText);
+                           String amount = item.getGstPercentage()!=null? (item.getAmount()+"\r\n"+ " GST: "+(item.getCgst()+item.getSgst())):item.getAmount()+"";
+                           row.createCell(8).setCellValue(amount);
+                           Double grandTotal = purchase.getGst()==null?purchase.getTotalCost():(purchase.getGst()+purchase.getTotalCost());
+                           System.out.println("Grand total: "+grandTotal);
+//                           String text ="";
+//                           if(purchase.getGst()!=null) {
+//                        	   text = "Sub-Total: "+purchase.getTotalCost()+"\n"+"GST: "+purchase.getGst()+"\n"+"Grand Total:"+grandTotal;
+//                           }
+//                           else
+//                        	   text = "Total: "+grandTotal;
+                           row.createCell(9).setCellValue(grandTotal);
                            row.createCell(10).setCellValue(purchase.getRemarks());
 
                         // styles + wrap
@@ -854,9 +872,13 @@ public class PurchaseService {
                                );
                                row.createCell(5).setCellValue(sub.getSubItemName());
                                row.createCell(6).setCellValue(sub.getQuantity());
-                               row.createCell(7).setCellValue(sub.getRate()+" "+sub.getUnit());
-                               row.createCell(8).setCellValue(sub.getAmount());
-                               row.createCell(9).setCellValue(purchase.getTotalCost());
+                               String gstText = sub.getGstPercentage()!=null?(" ( GST: "+sub.getGstPercentage()+"%)"):"";
+                               row.createCell(7).setCellValue(sub.getRate()+" "+sub.getUnit()+gstText);
+                               String amount = sub.getGstPercentage()!=null? (sub.getAmount()+"\n"+ " GST: "+(sub.getCgst()+sub.getSgst())):sub.getAmount()+"";
+                               row.createCell(8).setCellValue(amount);
+                               Double grandTotal = purchase.getGst()!=null?(purchase.getTotalCost()+purchase.getGst()):purchase.getTotalCost();
+                               System.out.println("Grand total: "+grandTotal+" gst: "+purchase.getGst());
+                               row.createCell(9).setCellValue(grandTotal);
                                row.createCell(10).setCellValue(purchase.getRemarks());
 
                                for (int col = 0; col <= 10; col++) {

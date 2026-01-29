@@ -38,6 +38,9 @@ public class PurchaseNonStock {
 
     @Column(name = "file_no", nullable = false)
     private String fileNo;
+    
+    @Column(name = "gst")
+    private Double gst;
 
     @Column(name = "file_date", nullable = false)
     private LocalDate fileDate;

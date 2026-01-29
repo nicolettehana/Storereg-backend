@@ -56,6 +56,9 @@ public class Purchase {
     @Column(name = "gst_percentage")
     private Double gstPercentage;
     
+    @Column(name = "gst")
+    private Double gst;
+    
     @Column(name = "receipt_entrydate")
     private LocalDateTime receiptEntryDate;
     
