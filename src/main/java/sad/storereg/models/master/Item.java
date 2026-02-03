@@ -67,5 +67,8 @@ public class Item {
     
     @Transient
     private String balance;
+    
+    @Column(name = "office_code", nullable = false)
+    private Integer officeCode;
 
 }

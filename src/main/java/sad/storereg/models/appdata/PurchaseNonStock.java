@@ -60,6 +60,9 @@ public class PurchaseNonStock {
 
     @Column(name = "bill_date")
     private LocalDate billDate;
+    
+    @Column(name = "office_code")
+    private Integer officeCode;
 
     private Double total;
 

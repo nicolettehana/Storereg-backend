@@ -13,11 +13,13 @@ import sad.storereg.models.master.Item;
 
 public interface ItemRepository extends JpaRepository<Item, Long>{
 	
-	Page<Item> findAll(Pageable pageable);
+	Page<Item> findAllByOfficeCode(Integer officeCode, Pageable pageable);
 	
-	Page<Item> findAllByCategory_Code(String category, Pageable pageable);
+	Page<Item> findAllByCategory_CodeAndOfficeCode(String category, Integer officeCode, Pageable pageable);
 	
-	List<Item> findAllByCategory_Code(String category);
+	List<Item> findAllByCategory_CodeAndOfficeCode(String category, Integer officeCode);
+	
+	List<Item> findAllByOfficeCode(Integer officeCode);
 	
 	@Query("""
 		    SELECT new sad.storereg.dto.appdata.CategoryCountDTO(
@@ -30,11 +32,11 @@ public interface ItemRepository extends JpaRepository<Item, Long>{
 		            END
 		        )
 		    )
-		    FROM Item i
+		    FROM Item i WHERE i.officeCode = :officeCode
 		    GROUP BY i.category.name, i.category.code
 		    ORDER BY i.category.name ASC
 		""")
-		List<CategoryCountDTO> getCategoryCounts();
+		List<CategoryCountDTO> getCategoryCounts(@Param("officeCode") Integer officeCode);
 
 
 	
@@ -45,9 +47,9 @@ public interface ItemRepository extends JpaRepository<Item, Long>{
 		            ELSE size(i.subItems)
 		        END
 		    )
-		    FROM Item i
+		    FROM Item i WHERE i.officeCode = :officeCode
 		""")
-		Long getAbsoluteTotal();
+		Long getAbsoluteTotal(@Param("officeCode") Integer officeCode);
 
 	@Query("""
 		    select distinct r.id
@@ -65,11 +67,12 @@ public interface ItemRepository extends JpaRepository<Item, Long>{
 	        SELECT DISTINCT i
 	        FROM Item i
 	        LEFT JOIN i.subItems s
-	        WHERE LOWER(i.name) LIKE LOWER(CONCAT('%', :search, '%'))
-	           OR LOWER(s.name) LIKE LOWER(CONCAT('%', :search, '%'))
+	        WHERE (LOWER(i.name) LIKE LOWER(CONCAT('%', :search, '%'))
+	           OR LOWER(s.name) LIKE LOWER(CONCAT('%', :search, '%'))) 
+	           AND i.officeCode= :officeCode
 	    """)
-	    Page<Item> searchByItemOrSubItemName(
-	            @Param("search") String search,
+	    Page<Item> searchByItemOrSubItemNameAndOfficeCode(
+	            @Param("search") String search, Integer officeCode,
 	            Pageable pageable
 	    );
 }

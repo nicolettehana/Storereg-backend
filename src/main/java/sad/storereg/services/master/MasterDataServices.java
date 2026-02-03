@@ -36,22 +36,22 @@ public class MasterDataServices {
 	
 	private final PurchaseService purchaseService;
 	
-	public List<Category> getCategories(String stockType) {
+	public List<Category> getCategories(String stockType, Integer officeCode) {
 		try {
 			if(stockType!=null && stockType.length()==1)
-				return categoryRepo.findAllByStockType(stockType);
+				return categoryRepo.findAllByStockTypeAndOfficeCode(stockType,officeCode);
 				
 			else
-				return categoryRepo.findAll();
+				return categoryRepo.findAllByOfficeCode(officeCode);
 				
 			}catch(Exception ex) {
 			throw ex;
 		}
     }
 	
-	public List<Unit> getUnits() {
+	public List<Unit> getUnits(Integer officeCode) {
 		try {
-				return unitRepo.findAll();
+				return unitRepo.findAllByOfficeCode(officeCode);
 			}catch(Exception ex) {
 			throw ex;
 		}
@@ -128,14 +128,15 @@ public class MasterDataServices {
 		}
     }
 	
-	public String createCategory(Category request) {
+	public String createCategory(Category request, Integer officeCode) {
 		try {
-			if(categoryRepo.findByCodeOrName(request.getCode(), request.getName()).isPresent())
+			if(categoryRepo.findByOfficeCodeAndCodeOrOfficeCodeAndName(officeCode, request.getCode(), officeCode, request.getName()).isPresent())
 				throw new UnauthorizedException("Category/Code exists");
 	    	Category category  = new Category();
 	    	category.setName(request.getName());
 	    	category.setCode(request.getCode());
 	    	category.setStockType(request.getStockType());
+	    	category.setOfficeCode(officeCode);
 	    	categoryRepo.save(category);
 	    	return "Added successfully";
 		}catch(Exception ex) {
@@ -143,9 +144,9 @@ public class MasterDataServices {
 		}
     }
 	
-	public String updateCategory(Category request) {
+	public String updateCategory(Category request, Integer officeCode) {
 		try {
-			Optional<Category> category=categoryRepo.findByCodeOrName(request.getCode(), request.getName());
+			Optional<Category> category=categoryRepo.findByOfficeCodeAndCodeOrOfficeCodeAndName(officeCode, request.getCode(), officeCode, request.getName());
 			if(category.isEmpty())
 				throw new UnauthorizedException("Category/Code does not exist");
 	    	
@@ -157,13 +158,14 @@ public class MasterDataServices {
 		}
     }
 	
-	public String createUnit(Unit request) {
+	public String createUnit(Unit request, Integer officeCode) {
 		try {
-			if(unitRepo.findByUnitOrName(request.getUnit(), request.getName()).isPresent())
+			if(unitRepo.findByOfficeCodeAndUnitOrOfficeCodeAndName(officeCode, request.getUnit(), officeCode, request.getName()).isPresent())
 				throw new UnauthorizedException("Unit exists");
 	    	Unit unit  = new Unit();
 	    	unit.setName(request.getName());
 	    	unit.setUnit(request.getUnit());
+	    	unit.setOfficeCode(officeCode);
 	    	unitRepo.save(unit);
 	    	return "Added successfully";
 		}catch(Exception ex) {

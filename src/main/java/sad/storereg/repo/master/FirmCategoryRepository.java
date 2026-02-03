@@ -12,7 +12,7 @@ import sad.storereg.models.master.FirmCategory;
 
 public interface FirmCategoryRepository extends JpaRepository<FirmCategory, Long>{
 
-	Page<FirmCategory> findByCategory_Code(String categoryCode, Pageable pageable);
+	Page<FirmCategory> findByCategory_CodeAndCategory_OfficeCode(String categoryCode, Integer officeCode, Pageable pageable);
 	
 	long count();
 	

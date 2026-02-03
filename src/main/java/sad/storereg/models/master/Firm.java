@@ -42,6 +42,9 @@ public class Firm {
 
     @Column(name = "entrydate")
     private LocalDateTime entryDate;
+    
+    @Column(name = "office_code", nullable = false)
+    private Integer officeCode;
 
     @OneToMany(mappedBy = "firm", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FirmCategory> categories = new ArrayList<>();

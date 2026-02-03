@@ -21,9 +21,11 @@ public class Unit {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-
 	@Column(nullable = false, unique = true)
 	private String unit;
+	
+	@Column(name = "office_code", nullable = false)
+    private Integer officeCode;
 	
 	private String name;
 	

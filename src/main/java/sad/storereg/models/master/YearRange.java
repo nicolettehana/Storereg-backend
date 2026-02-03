@@ -31,6 +31,9 @@ public class YearRange {
 
     @Column(name = "end_year", nullable = false)
     private Integer endYear;
+    
+    @Column(name = "office_code", nullable = false)
+    private Integer officeCode;
 
     @JsonIgnore
     @Column(name = "entrydate")

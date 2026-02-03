@@ -12,11 +12,12 @@ public interface YearRangeRepository extends JpaRepository<YearRange, Integer>{
 	
 	Optional<YearRange> findByStartYearLessThanEqualAndEndYearGreaterThanEqual(int year1, int year2);
 
-	List<YearRange> findAllByOrderByStartYearDesc();
+	List<YearRange> findAllByOfficeCodeOrderByStartYearDesc(Integer officeCode);
 	
-	boolean existsByStartYearLessThanEqualAndEndYearGreaterThanEqual(
+	boolean existsByStartYearLessThanEqualAndEndYearGreaterThanEqualAndOfficeCodeEquals(
             Integer endYear,
-            Integer startYear
+            Integer startYear,
+            Integer officeCode
     );
 
 }

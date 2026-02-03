@@ -14,9 +14,9 @@ import sad.storereg.models.master.FirmYear;
 
 public interface FirmYearRepository extends JpaRepository<FirmYear, Long>{
 
-	Page<FirmYear> findByYearRange_Id(Integer yearRangeId, Pageable pageable);
+	Page<FirmYear> findByYearRange_IdAndOfficeCode(Integer yearRangeId, Integer officeCode, Pageable pageable);
 
-    Page<FirmYear> findByYearRange_IdAndCategory_Code(Integer yearRangeId, String categoryCode, Pageable pageable);
+    Page<FirmYear> findByYearRange_IdAndCategory_CodeAndOfficeCode(Integer yearRangeId, String categoryCode, Integer officeCode, Pageable pageable);
     
     List<FirmYear> findByFirm_Id(Long firmId);
     
@@ -31,11 +31,11 @@ public interface FirmYearRepository extends JpaRepository<FirmYear, Long>{
             FROM FirmYear fy
             JOIN fy.category c
             JOIN fy.yearRange yr
-            WHERE yr.id = :yearRangeId
+            WHERE yr.id = :yearRangeId AND yr.officeCode= :officeCode
             GROUP BY c.name, c.code
         """)
-        List<CategoryCountDTO> findCategoryCountsByYearRange(
-                @Param("yearRangeId") Long yearRangeId
+        List<CategoryCountDTO> findCategoryCountsByYearRangeAndOfficeCode(
+                @Param("yearRangeId") Long yearRangeId, @Param("officeCode") Integer officeCode
         );
 
 
@@ -44,10 +44,11 @@ public interface FirmYearRepository extends JpaRepository<FirmYear, Long>{
             FROM FirmYear fy
             JOIN fy.firm f
             JOIN fy.yearRange yr
-            WHERE yr.id = :yearRangeId
+            WHERE yr.id = :yearRangeId AND yr.officeCode = :officeCode
               AND LOWER(f.firm) LIKE LOWER(CONCAT('%', :firmName, '%'))
         """)
-        Page<FirmYear> findByYearRangeIdAndFirmNameLike(
+        Page<FirmYear> findByOfficeCodeAndYearRangeIdAndFirmNameLike(
+        		@Param("officeCode") Integer officeCode,
                 @Param("yearRangeId") Integer yearRangeId,
                 @Param("firmName") String firmName,
                 Pageable pageable

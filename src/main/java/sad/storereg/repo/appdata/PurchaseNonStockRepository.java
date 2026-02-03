@@ -29,7 +29,8 @@ public interface PurchaseNonStockRepository extends JpaRepository<PurchaseNonSto
 		            :status = 'A'
 		            OR (:status = 'P' AND p.billNo IS NULL)
 		            OR (:status = 'R' AND p.billNo IS NOT NULL)
-		          )
+		          ) 
+		      AND p.officeCode=:officeCode
 		""")
 		Page<PurchaseNonStock> searchPurchaseNonStock(
 		        @Param("startDate") LocalDate startDate,
@@ -37,6 +38,7 @@ public interface PurchaseNonStockRepository extends JpaRepository<PurchaseNonSto
 		        @Param("category") String category,
 		        @Param("searchValue") String searchValue,
 		        @Param("status") String status,
+		        @Param("officeCode") Integer officeCode,
 		        Pageable pageable
 		);
 	
@@ -55,7 +57,8 @@ public interface PurchaseNonStockRepository extends JpaRepository<PurchaseNonSto
 		            :status = 'A'
 		            OR (:status = 'P' AND p.billNo IS NULL)
 		            OR (:status = 'R' AND p.billNo IS NOT NULL)
-		          )
+		          ) 
+		      AND p.officeCode=:officeCode
 		""")
 		Page<PurchaseNonStock> searchPurchaseReceiptsNonStock(
 		        @Param("startDate") LocalDate startDate,
@@ -63,6 +66,7 @@ public interface PurchaseNonStockRepository extends JpaRepository<PurchaseNonSto
 		        @Param("category") String category,
 		        @Param("searchValue") String searchValue,
 		        @Param("status") String status,
+		        @Param("officeCode") Integer officeCode,
 		        Pageable pageable
 		);
 	

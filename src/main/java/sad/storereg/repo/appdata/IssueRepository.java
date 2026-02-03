@@ -14,22 +14,37 @@ import sad.storereg.models.appdata.Issue;
 
 public interface IssueRepository extends JpaRepository<Issue, Long>{
 	
+//	@Query("""
+//	        SELECT iss FROM Issue iss
+//	        JOIN iss.items it
+//	        WHERE iss.date BETWEEN :startDate AND :endDate AND iss.officeCode = : officeCode 
+//	        AND (:category IS NULL OR it.categoryCode = :category)
+//	        AND (
+//	            :searchValue IS NULL
+//	            OR LOWER(iss.issueTo) LIKE LOWER(CONCAT('%', :searchValue, '%'))
+//	            OR LOWER(iss.remarks) LIKE LOWER(CONCAT('%', :searchValue, '%'))
+//	        )
+//	    """)
 	@Query("""
-	        SELECT iss FROM Issue iss
-	        JOIN iss.items it
-	        WHERE iss.date BETWEEN :startDate AND :endDate
-	        AND (:category IS NULL OR it.categoryCode = :category)
-	        AND (
-	            :searchValue IS NULL
-	            OR LOWER(iss.issueTo) LIKE LOWER(CONCAT('%', :searchValue, '%'))
-	            OR LOWER(iss.remarks) LIKE LOWER(CONCAT('%', :searchValue, '%'))
-	        )
-	    """)
+		    SELECT DISTINCT iss
+		    FROM Issue iss
+		    JOIN iss.items it
+		    JOIN it.item i
+		    WHERE iss.date BETWEEN :startDate AND :endDate
+		      AND i.officeCode = :officeCode
+		      AND (:category IS NULL OR it.categoryCode = :category)
+		      AND (
+		           :searchValue IS NULL
+		           OR LOWER(iss.issueTo) LIKE LOWER(CONCAT('%', :searchValue, '%'))
+		           OR LOWER(iss.remarks) LIKE LOWER(CONCAT('%', :searchValue, '%'))
+		      )
+		""")
 	Page<Issue> searchIssues(
 	        LocalDate startDate,
 	        LocalDate endDate,
 	        String category,
 	        String searchValue,
+	        Integer officeCode,
 	        Pageable pageable
 	);
 	

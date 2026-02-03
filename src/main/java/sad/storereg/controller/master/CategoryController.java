@@ -42,7 +42,7 @@ public class CategoryController {
 	@GetMapping({ "", "/{stockType}" })
 	public List<Category> getCatagory(@PathVariable(required = false) String stockType,HttpServletRequest request, HttpServletResponse response , @AuthenticationPrincipal User user) throws IOException {
 		try {
-			return masterDataServices.getCategories(stockType);
+			return masterDataServices.getCategories(stockType, user.getOfficeCode());
 		} catch (UnauthorizedException ex) {
 			throw ex;
 		} catch (Exception ex) {
@@ -51,22 +51,22 @@ public class CategoryController {
 	}
 	
 	@GetMapping("/stats")
-    public Map<String, Object> getStats(@RequestParam(required= false) Long yearRangeId) {
+    public Map<String, Object> getStats(@RequestParam(required= false) Long yearRangeId, @AuthenticationPrincipal User user) {
 
         Map<String, Object> response = new HashMap<>();
-        response.put("total", firmRepo.count());
+        response.put("total", firmRepo.countByOfficeCode(user.getOfficeCode()));
         //response.put("byCategory", firmCategoryRepo.countFirmsPerCategory());
         if(yearRangeId!=null)
-        	response.put("byCategory", firmYearRepo.findCategoryCountsByYearRange(yearRangeId));
+        	response.put("byCategory", firmYearRepo.findCategoryCountsByYearRangeAndOfficeCode(yearRangeId, user.getOfficeCode()));
 
         return response;
     }
 	
 	@Auditable
 	@PostMapping
-    public ResponseEntity<?> createCategory(@RequestBody Category request) {
+    public ResponseEntity<?> createCategory(@RequestBody Category request, @AuthenticationPrincipal User user) {
 		try {
-			return ResponseEntity.ok(masterDataServices.createCategory(request));
+			return ResponseEntity.ok(masterDataServices.createCategory(request, user.getOfficeCode()));
 			//return ResponseEntity.ok("ok");
 		} catch (UnauthorizedException ex) {
 			throw ex;
@@ -78,9 +78,9 @@ public class CategoryController {
 	
 	@Auditable
 	@PostMapping("/update")
-    public ResponseEntity<?> updateCategory(@RequestBody Category request) {
+    public ResponseEntity<?> updateCategory(@RequestBody Category request, @AuthenticationPrincipal User user) {
 		try {
-			return ResponseEntity.ok(masterDataServices.updateCategory(request));
+			return ResponseEntity.ok(masterDataServices.updateCategory(request, user.getOfficeCode()));
 			//return ResponseEntity.ok("ok");
 		} catch (UnauthorizedException ex) {
 			throw ex;

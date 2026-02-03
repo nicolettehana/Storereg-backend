@@ -52,11 +52,12 @@ public class IssueService {
             LocalDate endDate,
             String category,
             String searchValue,
+            Integer officeCode,
             Pageable pageable) {
 
 		
       Page<Issue> page = issueRepository.searchIssues(
-      startDate, endDate, category, searchValue, pageable);
+      startDate, endDate, category, searchValue, officeCode, pageable);
       
       page.forEach(issue ->
       issue.getItems().removeIf(item ->

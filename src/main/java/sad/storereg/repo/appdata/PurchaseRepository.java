@@ -61,7 +61,8 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 		            :status = 'A'
 		            OR (:status = 'P' AND p.billNo IS NULL)
 		            OR (:status = 'R' AND p.billNo IS NOT NULL)
-		          )
+		          ) 
+		          AND i.officeCode=:officeCode
 		""")
 		Page<Purchase> searchPurchases(
 		        @Param("startDate") LocalDate startDate,
@@ -69,6 +70,7 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 		        @Param("category") String category,
 		        @Param("searchValue") String searchValue,
 		        @Param("status") String status,
+		        @Param("officeCode") Integer officeCode,
 		        Pageable pageable
 		);
 	
@@ -88,7 +90,8 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 		            :status = 'A'
 		            OR (:status = 'P' AND p.billNo IS NULL)
 		            OR (:status = 'R' AND p.billNo IS NOT NULL)
-		          )
+		          ) 
+		      AND i.officeCode=:officeCode
 		""")
 		Page<Purchase> searchPurchaseReceipts(
 		        @Param("startDate") LocalDate startDate,
@@ -96,6 +99,7 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 		        @Param("category") String category,
 		        @Param("searchValue") String searchValue,
 		        @Param("status") String status,
+		        @Param("officeCode") Integer officeCode,
 		        Pageable pageable
 		);
 

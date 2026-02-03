@@ -85,15 +85,16 @@ public class PurchaseService {
             String searchValue,
             String status,
             String type,
+            Integer officeCode,
             Pageable pageable) {
 
 		Page<Purchase> page;
 		if(type.equals("PO"))
 				page = purchaseRepository.searchPurchases(
-                startDate, endDate, category, searchValue, status, pageable);
+                startDate, endDate, category, searchValue, status, officeCode, pageable);
 		else
 			page = purchaseRepository.searchPurchaseReceipts(
-	                startDate, endDate, category, searchValue, status, pageable);
+	                startDate, endDate, category, searchValue, status,officeCode, pageable);
 
         return page.map(this::convertToDTO);
     }
@@ -109,19 +110,19 @@ public class PurchaseService {
 	    dto.setDate(p.getDate());
 	    dto.setFileNo(p.getFileNo());
 	    dto.setBillNo(p.getBillNo());
-	    System.out.println("Bill no.:"+p.getBillNo()+" Bill date: "+p.getBillDate());
+	    
 	    dto.setBillDate(p.getBillDate());
 	    dto.setGstPercentage(p.getGstPercentage());
 	    
 	    //dto.setGst(p.getGstPercentage()!=null? (p.getGstPercentage()*p.getTotalCost())/100 : null);
-	    dto.setGst(
-	    	    p.getGstPercentage() != null
-	    	        ? BigDecimal.valueOf(p.getTotalCost())
-	    	            .multiply(BigDecimal.valueOf(p.getGstPercentage()))
-	    	            .divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP)
-	    	            .doubleValue()
-	    	        : null
-	    	);
+//	    dto.setGst(
+//	    	    p.getGstPercentage() != null
+//	    	        ? BigDecimal.valueOf(p.getTotalCost())
+//	    	            .multiply(BigDecimal.valueOf(p.getGstPercentage()))
+//	    	            .divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP)
+//	    	            .doubleValue()
+//	    	        : null
+//	    	);
 	    dto.setGst(p.getGst());
 
 	    
@@ -259,7 +260,7 @@ public class PurchaseService {
          return "Purchase added";
     }
 	
-	public String savePurchaseNS(PurchaseCreateDTO dto) {
+	public String savePurchaseNS(PurchaseCreateDTO dto, Integer officeCode) {
 		
         PurchaseNonStock purchase = new PurchaseNonStock();
         purchase.setFileDate(dto.getPurchaseDate());
@@ -268,6 +269,7 @@ public class PurchaseService {
         purchase.setRemarks(dto.getRemarks());
         purchase.setFileNo(dto.getFileNo());
         purchase.setIssueTo(dto.getIssueTo());
+        purchase.setOfficeCode(officeCode);
         
         // Convert items
         List<PurchaseItemNonStock> items = dto.getItems().stream().map(itemDTO -> {
@@ -1407,13 +1409,14 @@ public class PurchaseService {
             String searchValue,
             String status,
             String type,
+            Integer officeCode,
             Pageable pageable) {
 
         Page<PurchaseNonStock> page;
         if(type.equals("PO"))
-        	page= purchaseNonStockRepository.searchPurchaseNonStock(startDate, endDate, category, searchValue, status, pageable);
+        	page= purchaseNonStockRepository.searchPurchaseNonStock(startDate, endDate, category, searchValue, status, officeCode, pageable);
         else
-        	page = purchaseNonStockRepository.searchPurchaseReceiptsNonStock(startDate, endDate, category, searchValue, status, pageable);
+        	page = purchaseNonStockRepository.searchPurchaseReceiptsNonStock(startDate, endDate, category, searchValue, status, officeCode, pageable);
 
         return page.map(this::convertToDTONonStock);
     }

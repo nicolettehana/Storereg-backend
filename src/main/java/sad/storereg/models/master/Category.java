@@ -29,5 +29,8 @@ public class Category {
     
     @Column(nullable = false, name="type")
     private String stockType;
+    
+    @Column(name = "office_code", nullable = false)
+    private Integer officeCode;
 
 }

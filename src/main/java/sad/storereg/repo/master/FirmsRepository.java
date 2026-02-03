@@ -14,9 +14,13 @@ import sad.storereg.models.master.Firm;
 
 public interface FirmsRepository extends JpaRepository<Firm, Long>{
 	
+	Long countByOfficeCode(Integer officeCode);
 	
 	@EntityGraph(attributePaths = {"categories", "categories.category"})
 	Page<Firm> findAll(Pageable pageable);
+	
+	@EntityGraph(attributePaths = {"categories", "categories.category"})
+	Page<Firm> findAllByOfficeCode(Integer officeCode, Pageable pageable);
 	
 	@Query("""
 	        SELECT DISTINCT f 
@@ -27,7 +31,7 @@ public interface FirmsRepository extends JpaRepository<Firm, Long>{
 	    """)
 	    List<Firm> findAllByYear(int year);
 	
-	Page<Firm> findByFirmContainingIgnoreCase(String search, Pageable pageable);
+	Page<Firm> findByOfficeCodeAndFirmContainingIgnoreCase(Integer officeCode, String search,  Pageable pageable);
 	
 	@Query("""
 		    SELECT new sad.storereg.dto.master.FirmCheckDTO(

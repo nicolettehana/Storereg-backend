@@ -61,6 +61,7 @@ public class RateService {
             String categoryCode,
             Integer yearRangeId,
             String search,
+            Integer officeCode,
             Pageable pageable
     ) {
 
@@ -70,11 +71,9 @@ public class RateService {
                     .orElseThrow(() -> new RuntimeException("YearRange not found"));
         }
         
-        
-
-        Page<Item> itemPage = (search!=null && search.length()>0)? itemRepository.searchByItemOrSubItemName(search, pageable):
+        Page<Item> itemPage = (search!=null && search.length()>0)? itemRepository.searchByItemOrSubItemNameAndOfficeCode(search, officeCode, pageable):
         	((categoryCode != null && !categoryCode.isBlank())
-                ? itemRepository.findAllByCategory_Code(categoryCode, pageable)
+                ? itemRepository.findAllByCategory_CodeAndOfficeCode(categoryCode, officeCode, pageable)
                 : itemRepository.findAll(pageable));
 
         YearRange finalYearRange = yearRange;
@@ -731,7 +730,7 @@ public class RateService {
 		return("Rate added");
 	}
 	
-	public byte[] exportRates(String categoryCode, Integer yearRangeId) {
+	public byte[] exportRates(String categoryCode, Integer yearRangeId, Integer officeCode) {
 
 	    YearRange yearRange = null;
 	    if (yearRangeId != null) {
@@ -740,7 +739,7 @@ public class RateService {
 	    }
 
 	    List<Item> items = (categoryCode != null && !categoryCode.isBlank())
-	            ? itemRepository.findAllByCategory_Code(categoryCode)
+	            ? itemRepository.findAllByCategory_CodeAndOfficeCode(categoryCode, officeCode)
 	            : itemRepository.findAll();
 
 	    try (Workbook workbook = new XSSFWorkbook();

@@ -36,15 +36,17 @@ public class ItemService {
 	private final PurchaseService purchaseService;
 	private final ExcelServices excelService;
 
-    public Page<Item> getItems(Pageable pageable, String search, String category) {
+    public Page<Item> getItems(Pageable pageable, String search, Integer officeCode, String category) {
+    	
     	Page<Item> page;
+    	
     	if(search!=null && search.length()>0) {
-    		page = itemRepository.searchByItemOrSubItemName(search, pageable);
+    		page = itemRepository.searchByItemOrSubItemNameAndOfficeCode(search, officeCode, pageable);
     	}
     	else if(category==null || category.equals("") || category.equals("All"))
-    		page = itemRepository.findAll(pageable);
+    		page = itemRepository.findAllByOfficeCode(officeCode, pageable);
     	else
-    		page = itemRepository.findAllByCategory_Code(category, pageable);
+    		page = itemRepository.findAllByCategory_CodeAndOfficeCode(category, officeCode, pageable);
     	
     	//page.forEach(item -> item.setBalance(purchaseService.getAvailableBalance(item.getId(),item.getSubItems()==null?null:item.getSubItems().getId(), rate.getUnit().getId(), issueDate==null?LocalDate.now():null)));
 
@@ -62,16 +64,18 @@ public class ItemService {
         return page;
     }
     
-    public List<Item> getItemsList(String search, String category) {
+    public List<Item> getItemsList(String search, String category, Integer officeCode) {
     	if(category==null || category.equals("") || category.equals("All"))
-    		return itemRepository.findAll();
-    	else return itemRepository.findAllByCategory_Code(category);
+    		return itemRepository.findAllByOfficeCode(officeCode);
+    	else return itemRepository.findAllByCategory_CodeAndOfficeCode(category, officeCode);
     }
 
-    public String createItem(ItemDTO request) {
+    public String createItem(ItemDTO request, Integer officeCode) {
 
         Item item = new Item();
         item.setName(request.getItemName());
+        item.setOfficeCode(officeCode);
+        
         Category category = categoryRepository.findById(request.getCategory())
                 .orElseThrow(() -> new RuntimeException("Category code not found: " + request.getCategory()));
         item.setCategory(category);
@@ -100,17 +104,17 @@ public class ItemService {
         return("Item added");
     }
     
-    public List<CategoryCountDTO> getCategoryCounts() {
-        return itemRepository.getCategoryCounts();
+    public List<CategoryCountDTO> getCategoryCounts(Integer officeCode) {
+        return itemRepository.getCategoryCounts(officeCode);
     }
     
-    public Long getTotalItems() {
-    	return itemRepository.getAbsoluteTotal();
+    public Long getTotalItems(Integer officeCode) {
+    	return itemRepository.getAbsoluteTotal(officeCode);
     }
     
-    public byte[] getItems(String category) throws IOException {
+    public byte[] getItems(String category, Integer officeCode) throws IOException {
 
-        List<Item> items = getItemsList(null,category);
+        List<Item> items = getItemsList(null,category, officeCode);
 
      // Calculate balances
         items.forEach(item -> {
@@ -139,6 +143,5 @@ public class ItemService {
             workbook.write(out);
             return out.toByteArray();
         }
-    	
     }
 }

@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +19,7 @@ import sad.storereg.dto.master.UnitRateDTO;
 import sad.storereg.dto.master.UnitRequestDTO;
 import sad.storereg.exception.InternalServerError;
 import sad.storereg.exception.UnauthorizedException;
+import sad.storereg.models.auth.User;
 import sad.storereg.models.master.Unit;
 import sad.storereg.models.master.YearRange;
 import sad.storereg.services.master.MasterDataServices;
@@ -30,9 +32,9 @@ public class UnitController {
 	private final MasterDataServices masterDataServices;
 	
 	@GetMapping
-	public List<Unit> getUnits() throws IOException {
+	public List<Unit> getUnits(@AuthenticationPrincipal User user) throws IOException {
 		try {
-			return masterDataServices.getUnits();
+			return masterDataServices.getUnits(user.getOfficeCode());
 		} catch (UnauthorizedException ex) {
 			throw ex;
 		} catch (Exception ex) {
@@ -76,8 +78,8 @@ public class UnitController {
 	
 	@Auditable
 	@PostMapping
-    public ResponseEntity<?> createUnit(@RequestBody Unit request) {
-        return ResponseEntity.ok(masterDataServices.createUnit(request));
+    public ResponseEntity<?> createUnit(@RequestBody Unit request, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(masterDataServices.createUnit(request, user.getOfficeCode()));
 		//return ResponseEntity.ok("ok");
     }
 }

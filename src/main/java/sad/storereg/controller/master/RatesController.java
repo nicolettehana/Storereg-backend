@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +22,7 @@ import sad.storereg.services.master.RateService;
 import sad.storereg.annotations.Auditable;
 import sad.storereg.dto.master.ItemRateCreateDTO;
 import sad.storereg.dto.master.ItemRateDTO;
+import sad.storereg.models.auth.User;
 
 @RestController
 @RequestMapping("/rates")
@@ -34,9 +36,9 @@ public class RatesController {
 	@RequestParam(required = false) Integer yearRange,
 	@RequestParam int page,
 	@RequestParam int size,
-	@RequestParam(defaultValue = "") String search) {
+	@RequestParam(defaultValue = "") String search, @AuthenticationPrincipal User user) {
 
-		return rateService.getRates(category, yearRange, search, PageRequest.of(page, size));
+		return rateService.getRates(category, yearRange, search, user.getOfficeCode(), PageRequest.of(page, size));
 		
 
 	}
@@ -60,10 +62,11 @@ public class RatesController {
 	@GetMapping({ "/export", "/export/{category}" })
     public ResponseEntity<byte[]> exportFirms(
     		@PathVariable(required = false) String category,
-    		@RequestParam(required = false) Integer yearRange
+    		@RequestParam(required = false) Integer yearRange,
+    		@AuthenticationPrincipal User user
     ) throws IOException {
 
-	    	byte[] excelData = rateService.exportRates(category, yearRange);
+	    	byte[] excelData = rateService.exportRates(category, yearRange, user.getOfficeCode());
 	
 	        return ResponseEntity.ok()
 	                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=approved_firms.xlsx")

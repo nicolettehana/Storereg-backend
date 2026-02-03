@@ -16,15 +16,15 @@ public class YearRangeService {
 
 	private final YearRangeRepository yearRangeRepository;
 
-    public List<YearRange> getAllYearRanges() {
+    public List<YearRange> getAllYearRanges(Integer officeCode) {
     	try {
-    		return yearRangeRepository.findAllByOrderByStartYearDesc();
+    		return yearRangeRepository.findAllByOfficeCodeOrderByStartYearDesc(officeCode);
     	}catch(Exception ex) {
     		throw ex;
     	}
     }
     
-    public String createYearRange(YearRange request) {
+    public String createYearRange(YearRange request, Integer officeCode) {
     	Integer newStart = request.getStartYear();
         Integer newEnd = request.getEndYear();
 
@@ -33,9 +33,10 @@ public class YearRangeService {
         }
 
         boolean overlapExists =
-                yearRangeRepository.existsByStartYearLessThanEqualAndEndYearGreaterThanEqual(
+                yearRangeRepository.existsByStartYearLessThanEqualAndEndYearGreaterThanEqualAndOfficeCodeEquals(
                         newEnd,
-                        newStart
+                        newStart,
+                        officeCode
                 );
 
         if (overlapExists) {
@@ -46,6 +47,7 @@ public class YearRangeService {
     	yearRange.setStartYear(request.getStartYear());
     	yearRange.setEndYear(request.getEndYear());
     	yearRange.setEntryDate(LocalDateTime.now());
+    	yearRange.setOfficeCode(officeCode);
     	yearRangeRepository.save(yearRange);
     	return "Added successfully";
     }

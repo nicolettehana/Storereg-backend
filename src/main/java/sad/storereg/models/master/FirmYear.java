@@ -33,4 +33,7 @@ public class FirmYear {
 	    @ManyToOne(fetch = FetchType.LAZY)
 	    @JoinColumn(name = "category_code", referencedColumnName = "code", nullable = false)
 	    private Category category;
+	    
+	    @Column(name = "office_code", nullable = false)
+	    private Integer officeCode;
 }

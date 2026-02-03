@@ -4,18 +4,25 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
-import sad.storereg.dto.appdata.CategoryCountDTO;
 import sad.storereg.models.master.Category;
 
 public interface CategoryRepository extends JpaRepository<Category, String>{
 	
 	Optional<Category> findByCodeOrName(String code, String name);
+	Optional<Category> findByOfficeCodeAndCodeOrOfficeCodeAndName(
+		    Integer officeCode,
+		    String code,
+		    Integer officeCode2,
+		    String name
+		);
+
 	
 	Optional<Category> findByCode(String code);
 	
-	List<Category> findAllByStockType(String stockType);
+	List<Category> findAllByStockTypeAndOfficeCode(String stockType, Integer officeCode);
+	
+	List<Category> findAllByOfficeCode(Integer officeCode);
 	
 //	@Query("""
 //	        SELECT new com.example.dto.CategoryCountDTO(c.name, COUNT(f))

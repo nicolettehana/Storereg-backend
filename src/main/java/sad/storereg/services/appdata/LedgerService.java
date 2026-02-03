@@ -54,14 +54,15 @@ public class LedgerService {
     public Page<LedgerResponse> getLedger(LocalDate startDate,
                                           LocalDate endDate,
                                           String categoryCode,
+                                          Integer officeCode,
                                           Pageable pageable) {
     	Integer yearRangeId=1;
-    	Page<Item> itemsPage = itemRepo.findAll(pageable);
+    	Page<Item> itemsPage = itemRepo.findAllByOfficeCode(officeCode, pageable);
     	
     	if (categoryCode != null && categoryCode.length()>0) {
-            itemsPage = itemRepo.findAllByCategory_Code(categoryCode, pageable);
+            itemsPage = itemRepo.findAllByCategory_CodeAndOfficeCode(categoryCode, officeCode, pageable);
         } if(categoryCode==null || categoryCode.equals("")){
-            itemsPage = itemRepo.findAll(pageable);
+            itemsPage = itemRepo.findAllByOfficeCode(officeCode, pageable);
         }
 
         List<LedgerResponse> dtoList = new ArrayList<>(itemsPage.getContent().size());
@@ -167,14 +168,14 @@ public class LedgerService {
         return u;
     }
     
-    public byte[] exportLedger(LocalDate startDate, LocalDate endDate, String categoryCode) {
+    public byte[] exportLedger(LocalDate startDate, LocalDate endDate, String categoryCode, Integer officeCode) {
 
     	List<Item> items = null;
     	
     	if (categoryCode != null && categoryCode.length()>0) {
-            items = itemRepo.findAllByCategory_Code(categoryCode);
+            items = itemRepo.findAllByCategory_CodeAndOfficeCode(categoryCode, officeCode);
         } if(categoryCode==null || categoryCode.equals("")){
-            items = itemRepo.findAll();
+            items = itemRepo.findAllByOfficeCode(officeCode);
         }
 
         List<LedgerResponse> dtoList = new ArrayList<>(items.size());

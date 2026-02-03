@@ -11,6 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import sad.storereg.dto.appdata.LedgerResponse;
+import sad.storereg.models.auth.User;
 import sad.storereg.services.appdata.LedgerService;
 
 @RestController
@@ -34,10 +36,11 @@ public class LedgerController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sort, // optional
-            @RequestParam(defaultValue = "") String categoryCode
+            @RequestParam(defaultValue = "") String categoryCode,
+            @AuthenticationPrincipal User user
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
-        Page<LedgerResponse> ledger = ledgerService.getLedger(startDate, endDate, categoryCode, pageable);
+        Page<LedgerResponse> ledger = ledgerService.getLedger(startDate, endDate, categoryCode, user.getOfficeCode(), pageable);
         return ResponseEntity.ok(ledger);
     }
 	
@@ -45,10 +48,10 @@ public class LedgerController {
     public ResponseEntity<byte[]> exportLedger(
     		@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(defaultValue = "") String categoryCode
+            @RequestParam(defaultValue = "") String categoryCode, @AuthenticationPrincipal User user
     ) throws IOException {
 
-	    	byte[] excelData = ledgerService.exportLedger(startDate, endDate, categoryCode);
+	    	byte[] excelData = ledgerService.exportLedger(startDate, endDate, categoryCode, user.getOfficeCode());
 	
 	        return ResponseEntity.ok()
 	                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ledger_"+categoryCode+"_"+startDate+"-"+endDate+".xlsx")

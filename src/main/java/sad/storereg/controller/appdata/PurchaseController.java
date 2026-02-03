@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +23,7 @@ import sad.storereg.annotations.Auditable;
 import sad.storereg.dto.appdata.PurchaseCreateDTO;
 import sad.storereg.dto.appdata.PurchaseReceiptDTO;
 import sad.storereg.dto.appdata.PurchaseResponseDTO;
+import sad.storereg.models.auth.User;
 import sad.storereg.services.appdata.PurchaseService;
 
 @RestController
@@ -40,10 +42,11 @@ public class PurchaseController {
 	 	        @RequestParam(defaultValue = "") LocalDate startDate,
 	 	        @RequestParam(defaultValue = "") LocalDate endDate,
 	 	       @RequestParam(defaultValue = "") String status,
-	 	       @RequestParam(defaultValue="PO") String type
+	 	       @RequestParam(defaultValue="PO") String type,
+	 	      @AuthenticationPrincipal User user
 	 ) {
 	     Pageable pageable = PageRequest.of(page, size);
-	     return purchaseService.searchPurchases(startDate, endDate, category, search, status, type, pageable);
+	     return purchaseService.searchPurchases(startDate, endDate, category, search, status, type, user.getOfficeCode(), pageable);
 	 }
 	 
 	 @GetMapping({ "/ns", "/ns/{category}" })
@@ -54,11 +57,12 @@ public class PurchaseController {
 	 	        @RequestParam(defaultValue = "") String search,
 	 	        @RequestParam(defaultValue = "") LocalDate startDate,
 	 	        @RequestParam(defaultValue = "") LocalDate endDate,
-	 	       @RequestParam(defaultValue = "") String status,
-	 	      @RequestParam(defaultValue="PO") String type
+	 	        @RequestParam(defaultValue = "") String status,
+	 	        @RequestParam(defaultValue="PO") String type,
+	 	        @AuthenticationPrincipal User user
 	 ) {
 	     Pageable pageable = PageRequest.of(page, size);
-	     return purchaseService.searchNonStockPurchases(startDate, endDate, category, search, status, type, pageable);
+	     return purchaseService.searchNonStockPurchases(startDate, endDate, category, search, status, type, user.getOfficeCode(), pageable);
 	 }
 	 
 	 @Auditable
@@ -70,9 +74,9 @@ public class PurchaseController {
 	 
 	 @Auditable
 	 @PostMapping("/create-ns")
-	 public ResponseEntity<String> savePurchaseNS(@RequestBody PurchaseCreateDTO purchaseDTO) {
+	 public ResponseEntity<String> savePurchaseNS(@RequestBody PurchaseCreateDTO purchaseDTO, @AuthenticationPrincipal User user) {
 
-	     return ResponseEntity.ok(purchaseService.savePurchaseNS(purchaseDTO));
+	     return ResponseEntity.ok(purchaseService.savePurchaseNS(purchaseDTO, user.getOfficeCode()));
 	 }
 	 
 	 @Auditable

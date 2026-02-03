@@ -63,14 +63,14 @@ public class FirmService {
 	private final PurchaseService purchaseService;
 	private final ExcelServices excelService;
 
-	public Page<FirmsDTO> getFirms(Pageable pageable, String search, String category) {
+	public Page<FirmsDTO> getFirms(Pageable pageable, String search, String category, Integer officeCode) {
 	    Page<Firm> page;
 
 	    if (category == null || category.isEmpty() || category.equals("All")) {
-	        page = firmRepository.findAll(pageable);
+	        page = firmRepository.findAllByOfficeCode(officeCode, pageable);
 	    } else {
 	        // Query firms by category through FirmCategory
-	        Page<FirmCategory> fcPage = firmCategoryRepository.findByCategory_Code(category, pageable);
+	        Page<FirmCategory> fcPage = firmCategoryRepository.findByCategory_CodeAndCategory_OfficeCode(category, officeCode, pageable);
 
 	        // Extract unique firms
 	        List<Firm> firms = fcPage.stream()
@@ -134,16 +134,15 @@ public class FirmService {
 	            .build();
 	}
 	
-	public Page<FirmsDTO> searchFirms(Pageable pageable, String search, Integer yearRangeId) {
-	    
+	public Page<FirmsDTO> searchFirms(Pageable pageable, String search, Integer yearRangeId,  Integer officeCode) {
 	    
 	    if(yearRangeId==null) {
-	    	Page<Firm> page = firmRepository.findByFirmContainingIgnoreCase(search, pageable);
+	    	Page<Firm> page = firmRepository.findByOfficeCodeAndFirmContainingIgnoreCase( officeCode,search,pageable);
 	    	return page.map(this::convertToDto2);
 	    }
 	    else {
 	    	Page<FirmYear> firmYears =
-	    	        firmYearRepository.findByYearRangeIdAndFirmNameLike(yearRangeId, search, pageable);
+	    	        firmYearRepository.findByOfficeCodeAndYearRangeIdAndFirmNameLike(officeCode, yearRangeId,  search,  pageable);
 	    	// --- GROUP RESULT BY FIRM ---
 	        Map<Long, FirmsDTO> dtoMap = new LinkedHashMap<>();
 
@@ -210,10 +209,10 @@ public class FirmService {
 	}
 	
     @Transactional
-    public String createFirm(CreateFirmDTO request) {
+    public String createFirm(CreateFirmDTO request, Integer officeCode) {
     	
     	Firm firm = Firm.builder()
-    			.firm(request.getFirmName()).build();
+    			.firm(request.getFirmName()).officeCode(officeCode).build();
     	firmRepository.save(firm);
     	
     	for (String code : request.getCategories()) {
@@ -226,17 +225,17 @@ public class FirmService {
         return "Firm added";
     }
     
-    public Page<FirmsDTO> getFirms_old(Integer yearRangeId, String categoryCode, Pageable pageable) {
+    public Page<FirmsDTO> getFirms_old(Integer yearRangeId, String categoryCode, Integer officeCode, Pageable pageable) {
 
         Page<FirmYear> firmYears;
 
         if (categoryCode != null && !categoryCode.isEmpty()) {
-            firmYears = firmYearRepository.findByYearRange_IdAndCategory_Code(
-                    yearRangeId, categoryCode, pageable
+            firmYears = firmYearRepository.findByYearRange_IdAndCategory_CodeAndOfficeCode(
+                    yearRangeId, categoryCode, officeCode, pageable
             );
         } else {
-            firmYears = firmYearRepository.findByYearRange_Id(
-                    yearRangeId, pageable
+            firmYears = firmYearRepository.findByYearRange_IdAndOfficeCode(
+                    yearRangeId, officeCode, pageable
             );
         }
 
@@ -261,17 +260,17 @@ public class FirmService {
         return new PageImpl<>(dtos, pageable, firmYears.getTotalElements());
     }
     
-    public Page<FirmsDTO> getFirms(Integer yearRangeId, String categoryCode, Pageable pageable) {
+    public Page<FirmsDTO> getFirms(Integer yearRangeId, String categoryCode, Integer officeCode, Pageable pageable) {
 
         Page<FirmYear> firmYears;
 
         if (categoryCode != null && !categoryCode.isEmpty()) {
-            firmYears = firmYearRepository.findByYearRange_IdAndCategory_Code(
-                    yearRangeId, categoryCode, pageable
+            firmYears = firmYearRepository.findByYearRange_IdAndCategory_CodeAndOfficeCode(
+                    yearRangeId, categoryCode, officeCode, pageable
             );
         } else {
-            firmYears = firmYearRepository.findByYearRange_Id(
-                    yearRangeId, pageable
+            firmYears = firmYearRepository.findByYearRange_IdAndOfficeCode(
+                    yearRangeId, officeCode, pageable
             );
         }
 
@@ -440,17 +439,17 @@ public class FirmService {
         return "Firm updated";
     }
     
-    public List<FirmsDTO> getFirmsForExport(Integer yearRangeId, String categoryCode) {
+    public List<FirmsDTO> getFirmsForExport(Integer yearRangeId, String categoryCode, Integer officeCode) {
 
         Page<FirmYear> firmYears;
 
         if (categoryCode != null && !categoryCode.isEmpty()) {
-            firmYears = firmYearRepository.findByYearRange_IdAndCategory_Code(
-                    yearRangeId, categoryCode, Pageable.unpaged()
+            firmYears = firmYearRepository.findByYearRange_IdAndCategory_CodeAndOfficeCode(
+                    yearRangeId, categoryCode, officeCode, Pageable.unpaged()
             );
         } else {
-            firmYears = firmYearRepository.findByYearRange_Id(
-                    yearRangeId, Pageable.unpaged()
+            firmYears = firmYearRepository.findByYearRange_IdAndOfficeCode(
+                    yearRangeId, officeCode, Pageable.unpaged()
             );
         }
 
@@ -484,9 +483,9 @@ public class FirmService {
     }
 
     
-    public byte[] exportApprovedFirms(Integer yearRangeId, String categoryCode) throws IOException {
+    public byte[] exportApprovedFirms(Integer yearRangeId, String categoryCode, Integer officeCode) throws IOException {
 
-        List<FirmsDTO> firms = getFirmsForExport(yearRangeId, categoryCode);
+        List<FirmsDTO> firms = getFirmsForExport(yearRangeId, categoryCode, officeCode);
         
 
         try (Workbook workbook = new XSSFWorkbook();

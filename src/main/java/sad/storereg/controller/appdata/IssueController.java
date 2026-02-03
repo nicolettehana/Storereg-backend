@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import sad.storereg.annotations.Auditable;
 import sad.storereg.dto.appdata.PurchaseCreateDTO;
 import sad.storereg.dto.appdata.PurchaseResponseDTO;
+import sad.storereg.models.auth.User;
 import sad.storereg.services.appdata.IssueService;
 
 @RestController
@@ -36,10 +38,11 @@ public class IssueController {
     	        @RequestParam(defaultValue = "10") int size,
     	        @RequestParam(defaultValue = "") String search,
     	        @RequestParam(defaultValue = "") LocalDate startDate,
-    	        @RequestParam(defaultValue = "") LocalDate endDate
+    	        @RequestParam(defaultValue = "") LocalDate endDate,
+    	        @AuthenticationPrincipal User user
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return issueService.searchIssues(startDate, endDate, category, search, pageable);
+        return issueService.searchIssues(startDate, endDate, category, search, user.getOfficeCode(), pageable);
     }
 	
 	@Auditable
