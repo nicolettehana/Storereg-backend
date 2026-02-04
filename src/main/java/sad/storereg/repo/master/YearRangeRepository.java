@@ -10,7 +10,7 @@ import sad.storereg.models.master.YearRange;
 
 public interface YearRangeRepository extends JpaRepository<YearRange, Integer>{
 	
-	Optional<YearRange> findByStartYearLessThanEqualAndEndYearGreaterThanEqual(int year1, int year2);
+	Optional<YearRange> findByStartYearLessThanEqualAndEndYearGreaterThanEqualAndOfficeCode(int year1, int year2, int officeCode);
 
 	List<YearRange> findAllByOfficeCodeOrderByStartYearDesc(Integer officeCode);
 	

@@ -76,7 +76,7 @@ public class ItemService {
         item.setName(request.getItemName());
         item.setOfficeCode(officeCode);
         
-        Category category = categoryRepository.findById(request.getCategory())
+        Category category = categoryRepository.findByCodeAndOfficeCode(request.getCategory(),officeCode)
                 .orElseThrow(() -> new RuntimeException("Category code not found: " + request.getCategory()));
         item.setCategory(category);
 
@@ -137,7 +137,7 @@ public class ItemService {
             Sheet sheet = workbook.createSheet("Items");
             Map<String, CellStyle> styles = excelService.createStyles(workbook);
 
-            String categoryName = (category!=null && category.length()>0)?categoryRepository.findByCode(category).get().getName():"All";
+            String categoryName = (category!=null && category.length()>0)?categoryRepository.findByCodeAndOfficeCode(category, officeCode).get().getName():"All";
             excelService.createExcelContentItems(sheet, items, category, categoryName, styles, workbook);
 
             workbook.write(out);

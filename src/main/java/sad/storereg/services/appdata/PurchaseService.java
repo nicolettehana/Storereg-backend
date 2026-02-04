@@ -192,7 +192,7 @@ public class PurchaseService {
 	    return dto;
 	}
 	
-	public String savePurchase(PurchaseCreateDTO dto) {
+	public String savePurchase(PurchaseCreateDTO dto, Integer officeCode) {
 		
         // 1. Fetch Firm
         Firm firm = firmRepository.findById(dto.getFirmId())
@@ -229,7 +229,7 @@ public class PurchaseService {
 
             int year = dto.getPurchaseDate().getYear();
             YearRange yearRange = yearRangeRepository
-                    .findByStartYearLessThanEqualAndEndYearGreaterThanEqual(year, year)
+                    .findByStartYearLessThanEqualAndEndYearGreaterThanEqualAndOfficeCode(year, year, officeCode)
                     .orElseThrow(() -> new ObjectNotFoundException("Year not found"));
 
             item.setQuantity(itemDTO.getQuantity());
@@ -442,12 +442,12 @@ public class PurchaseService {
 	    return totalStock;
 	}
 	
-	public Map<String, Object> getFinancialYearReport(int year) {
+	public Map<String, Object> getFinancialYearReport(int year, Integer officeCode) {
 
 	    LocalDate fromDate = LocalDate.of(year, 4, 1);
 	    LocalDate toDate   = LocalDate.of(year + 1, 3, 31);
 
-	    List<Object[]> results = purchaseRepository.getCategoryTotals(fromDate, toDate);
+	    List<Object[]> results = purchaseRepository.getCategoryTotals(fromDate, toDate, officeCode);
 
 	    double total = 0;
 	    List<Map<String, Object>> categories = new ArrayList<>();
@@ -474,7 +474,7 @@ public class PurchaseService {
 	    return response;
 	}
 	
-	public boolean purchaseExist(Firm firm, YearRange yearRange, Category category) {
+	public boolean purchaseExist(Firm firm, YearRange yearRange, Category category, Integer officeCode) {
 		LocalDate startDate = LocalDate.of(yearRange.getStartYear(), 1, 1);
 		LocalDate endDate   = LocalDate.of(yearRange.getEndYear(), 12, 31);
 
@@ -488,10 +488,10 @@ public class PurchaseService {
 		return (purchases.size()>0?true:false);
 	}
 	
-	public byte[] exportPurchase(LocalDate startDate, LocalDate endDate, String categoryCode, String status) {
+	public byte[] exportPurchase(LocalDate startDate, LocalDate endDate, String categoryCode, String status, Integer officeCode) {
 		
 		List<Purchase> purchases = purchaseRepository.getPurchases(
-                startDate, endDate, categoryCode, status
+                startDate, endDate, categoryCode, status, officeCode
         );
 		
         List<PurchaseResponseDTO> dtoList = purchases.stream()
@@ -534,7 +534,7 @@ public class PurchaseService {
                );
 
                String categoryName = (categoryCode != null && !categoryCode.isEmpty())
-                       ? categoryRepository.findByCode(categoryCode).get().getName()
+                       ? categoryRepository.findByCodeAndOfficeCode(categoryCode, officeCode).get().getName()
                        : "All";
 
                rowIdx = excelService.createLabelValueRow(
@@ -709,10 +709,10 @@ public class PurchaseService {
            }
 	}
 	
-	public byte[] exportPurchaseReceipts(LocalDate startDate, LocalDate endDate, String categoryCode) {
+	public byte[] exportPurchaseReceipts(LocalDate startDate, LocalDate endDate, String categoryCode, Integer officeCode) {
 		
 		List<Purchase> purchases = purchaseRepository.getPurchaseReceipts(
-                startDate, endDate, categoryCode, "R"
+                startDate, endDate, categoryCode, "R", officeCode
         );
 		
         List<PurchaseResponseDTO> dtoList = purchases.stream()
@@ -755,7 +755,7 @@ public class PurchaseService {
                );
 
                String categoryName = (categoryCode != null && !categoryCode.isEmpty())
-                       ? categoryRepository.findByCode(categoryCode).get().getName()
+                       ? categoryRepository.findByCodeAndOfficeCode(categoryCode, officeCode).get().getName()
                        : "All";
 
                rowIdx = excelService.createLabelValueRow(
@@ -949,7 +949,7 @@ public class PurchaseService {
 		
 	}
 
-	public byte[] exportPurchaseOrdersNS(LocalDate startDate, LocalDate endDate, String categoryCode, String status) {
+	public byte[] exportPurchaseOrdersNS(LocalDate startDate, LocalDate endDate, String categoryCode, String status, Integer officeCode) {
 	
 	List<PurchaseNonStock> purchases = purchaseNonStockRepository.getPurchasesNonStock(
             startDate, endDate, categoryCode, status
@@ -995,7 +995,7 @@ public class PurchaseService {
            );
 
            String categoryName = (categoryCode != null && !categoryCode.isEmpty())
-                   ? categoryRepository.findByCode(categoryCode).get().getName()
+                   ? categoryRepository.findByCodeAndOfficeCode(categoryCode, officeCode).get().getName()
                    : "All";
 
            rowIdx = excelService.createLabelValueRow(
@@ -1172,10 +1172,10 @@ public class PurchaseService {
 	
 	}
 
-	public byte[] exportPurchaseReceiptsNS(LocalDate startDate, LocalDate endDate, String categoryCode) {
+	public byte[] exportPurchaseReceiptsNS(LocalDate startDate, LocalDate endDate, String categoryCode, Integer officeCode) {
 	
 	List<PurchaseNonStock> purchases = purchaseNonStockRepository.getPurchaseReceiptsNonStock(
-            startDate, endDate, categoryCode, "R"
+            startDate, endDate, categoryCode, "R", officeCode
     );
 	
     List<PurchaseResponseDTO> dtoList = purchases.stream()
@@ -1218,7 +1218,7 @@ public class PurchaseService {
            );
 
            String categoryName = (categoryCode != null && !categoryCode.isEmpty())
-                   ? categoryRepository.findByCode(categoryCode).get().getName()
+                   ? categoryRepository.findByCodeAndOfficeCode(categoryCode, officeCode).get().getName()
                    : "All";
 
            rowIdx = excelService.createLabelValueRow(
@@ -1434,16 +1434,17 @@ public class PurchaseService {
 	    dto.setDate(p.getFileDate());
 	    dto.setTotalCost(p.getTotal());
 	    dto.setIssuedTo(p.getIssueTo());
+	    dto.setOfficeCode(p.getOfficeCode());
 	    
 	    List<ItemPurchaseDTO> itemDTOs = p.getItems()
 	            .stream()
 	            .map(pi -> {
 
 	                ItemPurchaseDTO itemDTO = new ItemPurchaseDTO();
-
+	                
 	                itemDTO.setItemName(pi.getItem());
 	                itemDTO.setCategoryCode(pi.getCategory());
-	                itemDTO.setCategory(categoryRepository.findByCode(pi.getCategory()).orElse(null).getName());
+	                itemDTO.setCategory(categoryRepository.findByCodeAndOfficeCode(pi.getCategory(), dto.getOfficeCode()).orElse(null).getName());
 	                itemDTO.setUnit(pi.getUnit());
 	                itemDTO.setQuantity(pi.getQuantity());
 	                

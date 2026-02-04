@@ -44,9 +44,9 @@ public class UnitController {
 	
 	@Auditable
 	@PostMapping("/rates")
-	public List<UnitRateDTO> getUnitsRates(@RequestBody UnitRequestDTO request) throws IOException {
+	public List<UnitRateDTO> getUnitsRates(@RequestBody UnitRequestDTO request, @AuthenticationPrincipal User user) throws IOException {
 		try {
-			return masterDataServices.getUnitsRates(request);
+			return masterDataServices.getUnitsRates(request, user.getOfficeCode());
 		} catch (UnauthorizedException ex) {
 			throw ex;
 		} catch (Exception ex) {
@@ -55,9 +55,9 @@ public class UnitController {
 	}
 	
 	@GetMapping("/rates")
-	public List<UnitRateDTO> getUnitsRatess(@RequestParam LocalDate purchaseDate) throws IOException {
+	public List<UnitRateDTO> getUnitsRatess(@RequestParam LocalDate purchaseDate, @AuthenticationPrincipal User user) throws IOException {
 		try {
-			return masterDataServices.getUnitsRatesByDate(purchaseDate);
+			return masterDataServices.getUnitsRatesByDate(purchaseDate, user.getOfficeCode());
 		} catch (UnauthorizedException ex) {
 			throw ex;
 		} catch (Exception ex) {

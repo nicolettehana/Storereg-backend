@@ -37,6 +37,7 @@ public interface IssueRepository extends JpaRepository<Issue, Long>{
 		           :searchValue IS NULL
 		           OR LOWER(iss.issueTo) LIKE LOWER(CONCAT('%', :searchValue, '%'))
 		           OR LOWER(iss.remarks) LIKE LOWER(CONCAT('%', :searchValue, '%'))
+		           OR LOWER(i.name) LIKE LOWER(CONCAT('%', :searchValue, '%')) 
 		      )
 		""")
 	Page<Issue> searchIssues(
@@ -106,14 +107,33 @@ public interface IssueRepository extends JpaRepository<Issue, Long>{
 		    	    SELECT DISTINCT iss
 		    	    FROM Issue iss
 		    	    JOIN FETCH iss.items it
+		    	    JOIN it.item i
 		    	    WHERE iss.date BETWEEN :startDate AND :endDate
 		    	      AND (:category IS NULL OR it.categoryCode = :category)
+		    	      AND i.officeCode = :officeCode
 		    	""")
 		    	List<Issue> getIssues(
 		    	    @Param("startDate") LocalDate startDate,
 		    	    @Param("endDate") LocalDate endDate,
-		    	    @Param("category") String category
+		    	    @Param("category") String category,
+		    	    @Param("officeCode") Integer officeCode
 		    	);
+
+		    
+//		    @Query("""
+//		    	    SELECT DISTINCT iss
+//		    	    FROM Issue iss
+//		    	    JOIN FETCH iss.items it
+//		    	    WHERE iss.date BETWEEN :startDate AND :endDate
+//		    	      AND (:category IS NULL OR it.categoryCode = :category) 
+//		    	      AND it.officeCode =:officeCode
+//		    	""")
+//		    	List<Issue> getIssues(
+//		    	    @Param("startDate") LocalDate startDate,
+//		    	    @Param("endDate") LocalDate endDate,
+//		    	    @Param("category") String category,
+//		    	    @Param("officeCode") Integer officeCode
+//		    	);
 
 
 }

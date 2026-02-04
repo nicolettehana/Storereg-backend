@@ -64,27 +64,27 @@ public class FirmController {
     }
     
     @GetMapping({ "/listt" })
-    public List<FirmsDTO> getListFirmss(
+    public List<FirmsDTO> getListFirmss(@AuthenticationPrincipal User user
     ) {
     	
-    	return firmService.getFirmsList();
+    	return firmService.getFirmsList(user.getOfficeCode());
     }
     
     @GetMapping({ "/list" })
-    public List<FirmsDTO> getListFirms(@RequestParam(defaultValue = "") LocalDate date
+    public List<FirmsDTO> getListFirms(@RequestParam(defaultValue = "") LocalDate date, @AuthenticationPrincipal User user
     ) {
     	if(date!=null) 
     	
-    		return firmService.getFirmsListByDate(date);
+    		return firmService.getFirmsListByDate(date, user.getOfficeCode());
     	else
-    		return firmService.getFirmsList();
+    		return firmService.getFirmsList(user.getOfficeCode());
     }
     
     @Auditable
     @PostMapping("/add-approved")
-    public ResponseEntity<?> createFirmYear(@RequestBody FirmYearDTO request) {
+    public ResponseEntity<?> createFirmYear(@RequestBody FirmYearDTO request, @AuthenticationPrincipal User user) {
     	
-        return ResponseEntity.ok(firmService.createFirmYear(request));
+        return ResponseEntity.ok(firmService.createFirmYear(request, user.getOfficeCode()));
     }
     
     @GetMapping({"/all/{category}" })
@@ -93,20 +93,21 @@ public class FirmController {
     	        @RequestParam(defaultValue = "0") int page,
     	        @RequestParam(defaultValue = "10") int size,
     	        @RequestParam(defaultValue = "") String search,
-    	        @RequestParam(required= true, defaultValue = "") Integer yearRangeId
+    	        @RequestParam(required= true, defaultValue = "") Integer yearRangeId,
+    	        @AuthenticationPrincipal User user
     ) {
     	
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "firm"));
         
-        	return firmService.getAllFirms(yearRangeId, category, search, pageable);
+        	return firmService.getAllFirms(yearRangeId, category, search, user.getOfficeCode(), pageable);
 
     }
     
     @Auditable
     @PostMapping("/approve")
-    public ResponseEntity<?> addRemoveApprovedFirm(@RequestBody FirmApproveDTO request) {
+    public ResponseEntity<?> addRemoveApprovedFirm(@RequestBody FirmApproveDTO request, @AuthenticationPrincipal User user) {
     	try {
-    		return ResponseEntity.ok(firmService.updateFirmYear(request));
+    		return ResponseEntity.ok(firmService.updateFirmYear(request, user.getOfficeCode()));
     	}catch(Exception ex) {
     		throw ex;
     	}
@@ -135,7 +136,7 @@ public class FirmController {
 	                .body(excelData);
     	}
     	else {
-	    	byte[] excelData = firmService.exportAllFirms();
+	    	byte[] excelData = firmService.exportAllFirms(user.getOfficeCode());
 	
 	        return ResponseEntity.ok()
 	                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=all_firms.xlsx")

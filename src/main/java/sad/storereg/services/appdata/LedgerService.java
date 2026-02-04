@@ -64,7 +64,7 @@ public class LedgerService {
         } if(categoryCode==null || categoryCode.equals("")){
             itemsPage = itemRepo.findAllByOfficeCode(officeCode, pageable);
         }
-
+        System.out.println("Item page: "+itemsPage.getContent());
         List<LedgerResponse> dtoList = new ArrayList<>(itemsPage.getContent().size());
 
         for (Item item : itemsPage.getContent()) {
@@ -277,7 +277,7 @@ public class LedgerService {
 	                styles.get("bold")
 	        );
 	        
-	        String categoryName = (categoryCode!=null && categoryCode.length()>0)? categoryRepo.findByCode(categoryCode).get().getName():"All";
+	        String categoryName = (categoryCode!=null && categoryCode.length()>0)? categoryRepo.findByCodeAndOfficeCode(categoryCode, officeCode).get().getName():"All";
 	        rowIdx = excelService.createLabelValueRow(
 	                sheet,
 	                rowIdx,

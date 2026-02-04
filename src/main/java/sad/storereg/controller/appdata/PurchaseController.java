@@ -67,9 +67,9 @@ public class PurchaseController {
 	 
 	 @Auditable
 	 @PostMapping("/create")
-	 public ResponseEntity<String> savePurchase(@RequestBody PurchaseCreateDTO purchaseDTO) {
+	 public ResponseEntity<String> savePurchase(@RequestBody PurchaseCreateDTO purchaseDTO, @AuthenticationPrincipal User user) {
 
-	     return ResponseEntity.ok(purchaseService.savePurchase(purchaseDTO));
+	     return ResponseEntity.ok(purchaseService.savePurchase(purchaseDTO, user.getOfficeCode()));
 	 }
 	 
 	 @Auditable
@@ -97,9 +97,9 @@ public class PurchaseController {
 	 
 	 @GetMapping("/year/{year}")
 	    public ResponseEntity<Map<String, Object>> getFinancialYearReport(
-	            @PathVariable int year) {
+	            @PathVariable int year, @AuthenticationPrincipal User user) {
 
-	        Map<String, Object> response = purchaseService.getFinancialYearReport(year);
+	        Map<String, Object> response = purchaseService.getFinancialYearReport(year, user.getOfficeCode());
 	        return ResponseEntity.ok(response);
 	    }
 	 
@@ -108,9 +108,9 @@ public class PurchaseController {
 	 		 @PathVariable(required = false) String categoryCode,
 	  	        @RequestParam(defaultValue = "") LocalDate startDate,
 	  	        @RequestParam(defaultValue = "") LocalDate endDate,
-	  	      @RequestParam(defaultValue = "A") String status
+	  	      @RequestParam(defaultValue = "A") String status, @AuthenticationPrincipal User user
 	 ) {
-	  	byte[] excelData = purchaseService.exportPurchase(startDate, endDate, categoryCode, status);
+	  	byte[] excelData = purchaseService.exportPurchase(startDate, endDate, categoryCode, status, user.getOfficeCode());
 	  	
 	    return ResponseEntity.ok()
 	         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=purchase_orders_"+categoryCode+"_"+startDate+"-"+endDate+".xlsx")
@@ -122,9 +122,9 @@ public class PurchaseController {
 	 public ResponseEntity<byte[]> exportPurchaseReceipts(
 	 		 @PathVariable(required = false) String categoryCode,
 	  	        @RequestParam(defaultValue = "") LocalDate startDate,
-	  	        @RequestParam(defaultValue = "") LocalDate endDate
+	  	        @RequestParam(defaultValue = "") LocalDate endDate, @AuthenticationPrincipal User user
 	 ) {
-	  	byte[] excelData = purchaseService.exportPurchaseReceipts(startDate, endDate, categoryCode);
+	  	byte[] excelData = purchaseService.exportPurchaseReceipts(startDate, endDate, categoryCode, user.getOfficeCode());
 	  	
 	    return ResponseEntity.ok()
 	         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=purchase_receipts_"+categoryCode+"_"+startDate+"-"+endDate+".xlsx")
@@ -137,9 +137,9 @@ public class PurchaseController {
 	 		 @PathVariable(required = false) String categoryCode,
 	  	        @RequestParam(defaultValue = "") LocalDate startDate,
 	  	        @RequestParam(defaultValue = "") LocalDate endDate,
-	  	      @RequestParam(defaultValue = "A") String status
+	  	      @RequestParam(defaultValue = "A") String status, @AuthenticationPrincipal User user
 	 ) {
-	  	byte[] excelData = purchaseService.exportPurchaseOrdersNS(startDate, endDate, categoryCode, status);
+	  	byte[] excelData = purchaseService.exportPurchaseOrdersNS(startDate, endDate, categoryCode, status, user.getOfficeCode());
 	  	
 	    return ResponseEntity.ok()
 	         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=purchase_orders_ns_"+categoryCode+"_"+startDate+"-"+endDate+".xlsx")
@@ -151,9 +151,9 @@ public class PurchaseController {
 	 public ResponseEntity<byte[]> exportPurchaseReceiptsNS(
 	 		 @PathVariable(required = false) String categoryCode,
 	  	        @RequestParam(defaultValue = "") LocalDate startDate,
-	  	        @RequestParam(defaultValue = "") LocalDate endDate
+	  	        @RequestParam(defaultValue = "") LocalDate endDate, @AuthenticationPrincipal User user
 	 ) {
-	  	byte[] excelData = purchaseService.exportPurchaseReceiptsNS(startDate, endDate, categoryCode);
+	  	byte[] excelData = purchaseService.exportPurchaseReceiptsNS(startDate, endDate, categoryCode, user.getOfficeCode());
 	  	
 	    return ResponseEntity.ok()
 	         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=purchase_receipts_ns_"+categoryCode+"_"+startDate+"-"+endDate+".xlsx")

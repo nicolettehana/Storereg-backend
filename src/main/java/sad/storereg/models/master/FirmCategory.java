@@ -43,7 +43,7 @@ public class FirmCategory {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "category",
-            referencedColumnName = "code",
+            referencedColumnName = "id",
             nullable = false
     )
     private Category category;

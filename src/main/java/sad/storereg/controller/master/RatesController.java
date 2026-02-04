@@ -39,14 +39,12 @@ public class RatesController {
 	@RequestParam(defaultValue = "") String search, @AuthenticationPrincipal User user) {
 
 		return rateService.getRates(category, yearRange, search, user.getOfficeCode(), PageRequest.of(page, size));
-		
-
 	}
 	
 	@Auditable
 	@PostMapping
-    public ResponseEntity<?> createRate(@RequestBody ItemRateCreateDTO request) {
-        return ResponseEntity.ok(rateService.createRate(request));
+    public ResponseEntity<?> createRate(@RequestBody ItemRateCreateDTO request, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(rateService.createRate(request, user.getOfficeCode()));
 		//return ResponseEntity.ok("ok");
     }
 	
@@ -72,7 +70,5 @@ public class RatesController {
 	                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=approved_firms.xlsx")
 	                .contentType(MediaType.APPLICATION_OCTET_STREAM)
 	                .body(excelData);
-
-    	
     }
 }

@@ -235,12 +235,13 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 				           pi.item.category.code,
 				           SUM(pi.amount)
 				    FROM PurchaseItems pi
-				    WHERE pi.purchase.date BETWEEN :fromDate AND :toDate
+				    WHERE pi.purchase.date BETWEEN :fromDate AND :toDate AND pi.item.category.officeCode=:officeCode
 				    GROUP BY pi.item.category.name, pi.item.category.code
 				""")
 				List<Object[]> getCategoryTotals(
 				        @Param("fromDate") LocalDate fromDate,
-				        @Param("toDate") LocalDate toDate);
+				        @Param("toDate") LocalDate toDate,
+				        @Param("officeCode") Integer officeCode);
 
 
 			@Query("""
@@ -292,7 +293,8 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 			    	    JOIN FETCH p.items pi
 			    	    JOIN FETCH pi.item i
 			    	    WHERE p.date BETWEEN :startDate AND :endDate
-			    	      AND (:category IS NULL OR i.category.code = :category)
+			    	      AND (:category IS NULL OR i.category.code = :category) 
+			    	      AND i.officeCode =:officeCode
 			    	      AND (
             :status = 'A'
             OR (:status = 'P' AND p.billNo IS NULL)
@@ -303,7 +305,8 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 			    	        @Param("startDate") LocalDate startDate,
 			    	        @Param("endDate") LocalDate endDate,
 			    	        @Param("category") String category,
-			    	        @Param("status") String status
+			    	        @Param("status") String status,
+			    	        @Param("officeCode") Integer officeCode
 			    	);
 			    
 			    @Query("""
@@ -312,7 +315,8 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 			    	    JOIN FETCH p.items pi
 			    	    JOIN FETCH pi.item i
 			    	    WHERE p.billDate BETWEEN :startDate AND :endDate
-			    	      AND (:category IS NULL OR i.category.code = :category)
+			    	      AND (:category IS NULL OR i.category.code = :category) 
+			    	      AND i.officeCode =:officeCode
 			    	      AND (
             :status = 'A'
             OR (:status = 'P' AND p.billNo IS NULL)
@@ -323,7 +327,8 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 			    	        @Param("startDate") LocalDate startDate,
 			    	        @Param("endDate") LocalDate endDate,
 			    	        @Param("category") String category,
-			    	        @Param("status") String status
+			    	        @Param("status") String status,
+			    	        @Param("officeCode") Integer officeCode
 			    	);
 
 			    Optional<Purchase> findById(Long purchaseId);

@@ -123,12 +123,12 @@ public class StockBalanceService {
 	    return stockMap;
 	}
 	
-	public List<CategoryStockResponse> getStockFiltered(Integer level) {
-	    // Map<CategoryCode, CategoryStockResponse>
+	public List<CategoryStockResponse> getStockFiltered(Integer level, Integer officeCode) {
+	    
 	    Map<String, CategoryStockResponse> categoryMap = new LinkedHashMap<>();
 	    LocalDate today = LocalDate.now();
 
-	    List<Item> items = itemRepository.findAll();
+	    List<Item> items = itemRepository.findAllByOfficeCode(officeCode);
 
 	    for (Item item : items) {
 	        String categoryCode = item.getCategory().getCode();

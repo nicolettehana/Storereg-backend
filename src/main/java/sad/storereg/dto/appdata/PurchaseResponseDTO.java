@@ -20,5 +20,6 @@ public class PurchaseResponseDTO {
     private LocalDate billDate;
     private Double gstPercentage;
     private Double gst;
+    private Integer officeCode;
 
 }

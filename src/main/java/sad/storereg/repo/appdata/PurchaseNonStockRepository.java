@@ -97,13 +97,15 @@ public interface PurchaseNonStockRepository extends JpaRepository<PurchaseNonSto
 		            :status = 'A'
 		            OR (:status = 'P' AND p.billNo IS NULL)
 		            OR (:status = 'R' AND p.billNo IS NOT NULL)
-		          )
+		          ) 
+		      AND p.officeCode=:officeCode
 		""")
     	List<PurchaseNonStock> getPurchaseReceiptsNonStock(
     	        @Param("startDate") LocalDate startDate,
     	        @Param("endDate") LocalDate endDate,
     	        @Param("category") String category,
-    	        @Param("status") String status
+    	        @Param("status") String status,
+    	        @Param("officeCode") Integer officeCode
     	);
 
 }

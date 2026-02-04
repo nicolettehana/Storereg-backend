@@ -20,7 +20,7 @@ public interface FirmYearRepository extends JpaRepository<FirmYear, Long>{
     
     List<FirmYear> findByFirm_Id(Long firmId);
     
-    Optional<FirmYear> findByYearRange_IdAndCategory_CodeAndFirm_Id(Integer yearRangeId, String categoryCode, Long firmId);
+    Optional<FirmYear> findByYearRange_IdAndCategory_CodeAndFirm_IdAndCategory_OfficeCode(Integer yearRangeId, String categoryCode, Long firmId, Integer officeCode);
     
     @Query("""
             SELECT new sad.storereg.dto.appdata.CategoryCountDTO(

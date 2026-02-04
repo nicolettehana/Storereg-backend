@@ -57,10 +57,10 @@ public class MasterDataServices {
 		}
     }
 	
-	public List<UnitRateDTO> getUnitsRates(UnitRequestDTO request) {
+	public List<UnitRateDTO> getUnitsRates(UnitRequestDTO request, Integer officeCode) {
 		try {
 			int year = request.getPurchaseDate().getYear();
-			YearRange yearRange = yearRangeRepository.findByStartYearLessThanEqualAndEndYearGreaterThanEqual(year, year).orElseThrow(()->new UnauthorizedException("Rate for year "+year+" has not been defined in master data"));
+			YearRange yearRange = yearRangeRepository.findByStartYearLessThanEqualAndEndYearGreaterThanEqualAndOfficeCode(year, year, officeCode).orElseThrow(()->new UnauthorizedException("Rate for year "+year+" has not been defined in master data"));
 
 			List<Rate> rates = rateRepository.findRatesByItemAndOptionalSubItem(request.getItemId(), request.getSubItemId(), yearRange.getId());
 			// Map Rate entities to UnitRateDTO
@@ -80,10 +80,10 @@ public class MasterDataServices {
     }
 
 	
-	public List<UnitRateDTO> getUnitsRatesByDate(LocalDate date) {
+	public List<UnitRateDTO> getUnitsRatesByDate(LocalDate date, Integer officeCode) {
 		try {
 			int year = date.getYear();
-			YearRange yearRange = yearRangeRepository.findByStartYearLessThanEqualAndEndYearGreaterThanEqual(year, year).orElseThrow(()->new UnauthorizedException("Rate for year "+year+" has not been defined in master data"));
+			YearRange yearRange = yearRangeRepository.findByStartYearLessThanEqualAndEndYearGreaterThanEqualAndOfficeCode(year, year, officeCode).orElseThrow(()->new UnauthorizedException("Rate for year "+year+" has not been defined in master data"));
 
 			List<Rate> rates = rateRepository.findByYearRange_Id(yearRange.getId());
 					

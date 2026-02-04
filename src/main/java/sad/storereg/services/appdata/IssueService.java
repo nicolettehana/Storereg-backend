@@ -162,10 +162,10 @@ public class IssueService {
          return "Issue added";
     }
 	
-	public byte[] exportIssues(LocalDate startDate, LocalDate endDate, String categoryCode) {
+	public byte[] exportIssues(LocalDate startDate, LocalDate endDate, String categoryCode, Integer officeCode) {
 		
 		List<Issue> issues = issueRepository.getIssues(
-                startDate, endDate, categoryCode
+                startDate, endDate, categoryCode, officeCode
         );
 		
         List<PurchaseResponseDTO> dtoList = issues.stream()
@@ -208,7 +208,7 @@ public class IssueService {
                );
 
                String categoryName = (categoryCode != null && !categoryCode.isEmpty())
-                       ? categoryRepository.findByCode(categoryCode).get().getName()
+                       ? categoryRepository.findByCodeAndOfficeCode(categoryCode, officeCode).get().getName()
                        : "All";
 
                rowIdx = excelService.createLabelValueRow(

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import sad.storereg.dto.appdata.CategoryStockResponse;
+import sad.storereg.models.auth.User;
 import sad.storereg.services.appdata.StockBalanceService;
 
 @RestController
@@ -23,9 +25,10 @@ public class StockController {
 
 	    @GetMapping("/{level}")
 	    public ResponseEntity<List<CategoryStockResponse>> getStock(
-	    		@PathVariable Integer level
+	    		@PathVariable Integer level,
+	    		@AuthenticationPrincipal User user
 	    ) {
-	        List<CategoryStockResponse> response = stockService.getStockFiltered(level);
+	        List<CategoryStockResponse> response = stockService.getStockFiltered(level, user.getOfficeCode());
 	        return ResponseEntity.ok(response);
 	    }
 	    

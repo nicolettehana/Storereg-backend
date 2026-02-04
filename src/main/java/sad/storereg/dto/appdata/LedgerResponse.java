@@ -16,6 +16,7 @@ public class LedgerResponse {
     private String itemName;
     private String category;
     private String categoryCode;
+    
 
     private List<LedgerUnitResponse> units = new ArrayList<>();
     private List<LedgerSubItemResponse> subItems = new ArrayList<>();

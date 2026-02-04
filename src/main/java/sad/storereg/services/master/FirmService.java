@@ -311,9 +311,9 @@ public class FirmService {
         return new PageImpl<>(mergedList, pageable, firmYears.getTotalElements());
     }
 
-    public List<FirmsDTO> getFirmsList() {
+    public List<FirmsDTO> getFirmsList(Integer officeCode) {
         // Fetch all firms
-        List<Firm> firms = firmRepository.findAll();
+        List<Firm> firms = firmRepository.findAllByOfficeCode(officeCode);
 
         // Convert to DTO
         return firms.stream()
@@ -322,7 +322,7 @@ public class FirmService {
     }
     
     @Transactional
-    public String createFirmYear(FirmYearDTO request) {
+    public String createFirmYear(FirmYearDTO request, Integer officeCode) {
 
         // --- Validate Firm ---
         Firm firm = firmRepository.findById(request.getFirmId())
@@ -337,15 +337,16 @@ public class FirmService {
         // --- Create one FirmYear per category ---
         for (String categoryCode : request.getCategories()) {
 
-            Category category = categoryRepository.findById(categoryCode)
+            Category category = categoryRepository.findByCodeAndOfficeCode(categoryCode, officeCode)
                     .orElseThrow(() -> new RuntimeException("Category not found: " + categoryCode));
 
-            if(firmYearRepository.findByYearRange_IdAndCategory_CodeAndFirm_Id(yearRange.getId(), categoryCode, firm.getId()).isEmpty()){
+            if(firmYearRepository.findByYearRange_IdAndCategory_CodeAndFirm_IdAndCategory_OfficeCode(yearRange.getId(), categoryCode, firm.getId(), officeCode).isEmpty()){
             
 	            FirmYear fy = new FirmYear();
 	            fy.setFirm(firm);
 	            fy.setYearRange(yearRange);
 	            fy.setCategory(category);
+	            fy.setOfficeCode(officeCode);
 	
 	            created.add(firmYearRepository.save(fy));
             }
@@ -354,7 +355,7 @@ public class FirmService {
         return "Firm approved";
     }
     
-    public List<FirmsDTO> getFirmsListByDate(LocalDate date) {
+    public List<FirmsDTO> getFirmsListByDate(LocalDate date, Integer officeCode) {
     	
     	int year = date.getYear();
     	List<Firm> firms = new ArrayList<>();
@@ -366,7 +367,7 @@ public class FirmService {
 //			
 //		}
 //		else
-			firms = firmRepository.findAllByYear(year);
+			firms = firmRepository.findAllByYearAndOfficeCode(year,officeCode);
 
 			if (firms == null || firms.isEmpty()) {
 		        return List.of(); // return empty list instead of null
@@ -382,18 +383,20 @@ public class FirmService {
             Integer yearRangeId,
             String categoryCode,
             String search,
+            Integer officeCode,
             Pageable pageable) {
 
     	return firmRepository.findFirmsWithCheckedFlag(
                 search,
                 categoryCode,
                 yearRangeId,
+                officeCode,
                 pageable
         );
     }
     
     @Transactional
-    public String updateFirmYear(FirmApproveDTO request) {
+    public String updateFirmYear(FirmApproveDTO request, Integer officeCode) {
 
         // --- Validate Firm ---
         Firm firm = firmRepository.findById(request.getFirmId())
@@ -403,12 +406,12 @@ public class FirmService {
         YearRange yearRange = yearRangeRepository.findById(request.getYearRangeId())
                 .orElseThrow(() -> new UnauthorizedException("YearRange not found with id: " + request.getYearRangeId()));
         
-        Category category = categoryRepository.findByCode(request.getCategoryCode()).orElseThrow(() -> new UnauthorizedException("Catgeory not found with code: " + request.getCategoryCode()));
+        Category category = categoryRepository.findByCodeAndOfficeCode(request.getCategoryCode(), officeCode).orElseThrow(() -> new UnauthorizedException("Catgeory not found with code: " + request.getCategoryCode()));
 
-        Optional<FirmYear> fy= firmYearRepository.findByYearRange_IdAndCategory_CodeAndFirm_Id(yearRange.getId(), category.getCode(), firm.getId());
+        Optional<FirmYear> fy= firmYearRepository.findByYearRange_IdAndCategory_CodeAndFirm_IdAndCategory_OfficeCode(yearRange.getId(), category.getCode(), firm.getId(), officeCode);
         if(fy.isPresent())
         {
-        	if(purchaseService.purchaseExist(firm, yearRange, category))
+        	if(purchaseService.purchaseExist(firm, yearRange, category, officeCode))
         		throw new UnauthorizedException("Purchase/Purchases already made for this Firm, Year and category");
         	else {
         		firmYearRepository.deleteById(fy.get().getId());
@@ -420,6 +423,7 @@ public class FirmService {
 	        firmYear.setFirm(firm);
 	        firmYear.setCategory(category);
 	        firmYear.setYearRange(yearRange);
+	        firmYear.setOfficeCode(officeCode);
 	        firmYearRepository.save(firmYear);
 	        return "Firm approved";
         }
@@ -518,7 +522,7 @@ public class FirmService {
         	// ===== CATEGORY =====
         	String cat = categoryCode;
         	if(categoryCode!=null && categoryCode!="") {
-        		Optional<Category> category = categoryRepository.findByCode(categoryCode);
+        		Optional<Category> category = categoryRepository.findByCodeAndOfficeCode(categoryCode, officeCode);
         		if(category.isPresent())
         			cat=category.get().getName();
         	}
@@ -618,9 +622,9 @@ public class FirmService {
         return yr.getStartYear() + " - " + yr.getEndYear();
     }
     
-    public byte[] exportAllFirms() throws IOException {
+    public byte[] exportAllFirms(Integer officeCode) throws IOException {
 
-    	List<Firm> f = firmRepository.findAll();
+    	List<Firm> f = firmRepository.findAllByOfficeCode(officeCode);
     	List<FirmsDTO> firms = f.stream()
     	        .map(this::convertToDto2)
     	        .toList();

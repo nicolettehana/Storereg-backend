@@ -22,14 +22,16 @@ public interface FirmsRepository extends JpaRepository<Firm, Long>{
 	@EntityGraph(attributePaths = {"categories", "categories.category"})
 	Page<Firm> findAllByOfficeCode(Integer officeCode, Pageable pageable);
 	
+	List<Firm> findAllByOfficeCode(Integer officeCode);
+	
 	@Query("""
 	        SELECT DISTINCT f 
 	        FROM Firm f
 	        JOIN FirmYear fy ON fy.firm = f
 	        JOIN fy.yearRange yr
-	        WHERE :year BETWEEN yr.startYear AND yr.endYear
+	        WHERE :year BETWEEN yr.startYear AND yr.endYear AND f.officeCode=:officeCode
 	    """)
-	    List<Firm> findAllByYear(int year);
+	    List<Firm> findAllByYearAndOfficeCode(int year, int officeCode);
 	
 	Page<Firm> findByOfficeCodeAndFirmContainingIgnoreCase(Integer officeCode, String search,  Pageable pageable);
 	
@@ -44,12 +46,13 @@ public interface FirmsRepository extends JpaRepository<Firm, Long>{
 		        ON fy.firm.id = f.id
 		       AND fy.category.code = :categoryCode
 		       AND fy.yearRange.id = :yearRangeId
-		    WHERE (:search IS NULL OR LOWER(f.firm) LIKE LOWER(CONCAT('%', :search, '%')))
+		    WHERE (:search IS NULL OR LOWER(f.firm) LIKE LOWER(CONCAT('%', :search, '%'))) AND f.officeCode=:officeCode
 		""")
 		Page<FirmCheckDTO> findFirmsWithCheckedFlag(
 		        @Param("search") String search,
 		        @Param("categoryCode") String categoryCode,
 		        @Param("yearRangeId") Integer yearRangeId,
+		        @Param("officeCode") Integer officeCode,
 		        Pageable pageable
 		);
 

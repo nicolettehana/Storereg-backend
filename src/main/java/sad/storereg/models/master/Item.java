@@ -50,7 +50,7 @@ public class Item {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "category",          // column in items table
-            referencedColumnName = "code", // PK of category table
+            referencedColumnName = "id", // PK of category table
             nullable = false
     )
     private Category category;

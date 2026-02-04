@@ -31,7 +31,7 @@ public class FirmYear {
 	    private YearRange yearRange;
 
 	    @ManyToOne(fetch = FetchType.LAZY)
-	    @JoinColumn(name = "category_code", referencedColumnName = "code", nullable = false)
+	    @JoinColumn(name = "category", referencedColumnName = "id", nullable = false)
 	    private Category category;
 	    
 	    @Column(name = "office_code", nullable = false)

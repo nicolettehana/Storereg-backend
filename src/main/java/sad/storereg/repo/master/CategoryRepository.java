@@ -18,7 +18,7 @@ public interface CategoryRepository extends JpaRepository<Category, String>{
 		);
 
 	
-	Optional<Category> findByCode(String code);
+	Optional<Category> findByCodeAndOfficeCode(String code, Integer officeCode);
 	
 	List<Category> findAllByStockTypeAndOfficeCode(String stockType, Integer officeCode);
 	

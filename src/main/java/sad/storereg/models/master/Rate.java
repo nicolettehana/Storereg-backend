@@ -12,6 +12,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
@@ -29,7 +30,6 @@ public class Rate {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "year_range_id", nullable = false)
@@ -49,7 +49,7 @@ public class Rate {
 
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "category", referencedColumnName = "code", nullable = false)
+	@JoinColumn(name = "category", nullable = false)
 	private Category category;
 
 

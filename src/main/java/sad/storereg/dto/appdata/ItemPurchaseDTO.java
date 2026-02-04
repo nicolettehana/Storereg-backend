@@ -16,6 +16,7 @@ public class ItemPurchaseDTO {
     private Integer unitId;
     private String category;
     private String categoryCode;
+    private Integer officeCode;
     private Long id;
     private Long itemId;
     private Double gstPercentage;

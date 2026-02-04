@@ -74,7 +74,7 @@ public class RateService {
         Page<Item> itemPage = (search!=null && search.length()>0)? itemRepository.searchByItemOrSubItemNameAndOfficeCode(search, officeCode, pageable):
         	((categoryCode != null && !categoryCode.isBlank())
                 ? itemRepository.findAllByCategory_CodeAndOfficeCode(categoryCode, officeCode, pageable)
-                : itemRepository.findAll(pageable));
+                : itemRepository.findAllByOfficeCode(officeCode, pageable));
 
         YearRange finalYearRange = yearRange;
 
@@ -605,7 +605,7 @@ public class RateService {
 	    return rateRepository.findAll(pageable);
 	}
 	
-	public String createRate(ItemRateCreateDTO request) {
+	public String createRate(ItemRateCreateDTO request, Integer officeCode) {
 		
 		YearRange yearRange = yearRangeRepository.findById(request.getYearRangeId())
                 .orElseThrow(() -> new RuntimeException("YearRange not found"));
@@ -626,7 +626,7 @@ public class RateService {
 				throw new RuntimeException("Sub-item not found");
 		}		
         
-        Category category = categoryRepository.findById(request.getCategoryCode())
+        Category category = categoryRepository.findByCodeAndOfficeCode(request.getCategoryCode(), officeCode)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         
         Unit unit = unitRepository.findById(request.getUnitId())
@@ -740,7 +740,7 @@ public class RateService {
 
 	    List<Item> items = (categoryCode != null && !categoryCode.isBlank())
 	            ? itemRepository.findAllByCategory_CodeAndOfficeCode(categoryCode, officeCode)
-	            : itemRepository.findAll();
+	            : itemRepository.findAllByOfficeCode(officeCode);
 
 	    try (Workbook workbook = new XSSFWorkbook();
 	         ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -775,7 +775,7 @@ public class RateService {
 	                styles.get("bold")
 	        );
 
-	        String categoryName = (categoryCode!=null && categoryCode.length()>0)? categoryRepository.findByCode(categoryCode).get().getName():"All";
+	        String categoryName = (categoryCode!=null && categoryCode.length()>0)? categoryRepository.findByCodeAndOfficeCode(categoryCode, officeCode).get().getName():"All";
 	        rowIdx = excelService.createLabelValueRow(
 	                sheet,
 	                rowIdx,

@@ -57,10 +57,11 @@ public class IssueController {
 	 public ResponseEntity<byte[]> exportPurchase(
 	 		 @PathVariable(required = false) String categoryCode,
 	  	        @RequestParam(defaultValue = "") LocalDate startDate,
-	  	        @RequestParam(defaultValue = "") LocalDate endDate
+	  	        @RequestParam(defaultValue = "") LocalDate endDate,
+	  	      @AuthenticationPrincipal User user
 	 ) {
 		 System.out.println("Data: "+categoryCode+" "+startDate+" "+endDate);
-	  	byte[] excelData = issueService.exportIssues(startDate, endDate, categoryCode);
+	  	byte[] excelData = issueService.exportIssues(startDate, endDate, categoryCode, user.getOfficeCode());
 	  	
 	    return ResponseEntity.ok()
 	         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=issue_"+categoryCode+"_"+startDate+"-"+endDate+".xlsx")
