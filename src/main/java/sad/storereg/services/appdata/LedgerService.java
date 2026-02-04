@@ -38,6 +38,7 @@ import sad.storereg.repo.appdata.StockBalanceRepository;
 import sad.storereg.repo.master.CategoryRepository;
 import sad.storereg.repo.master.ItemRepository;
 import sad.storereg.repo.master.RateRepository;
+import sad.storereg.repo.master.YearRangeRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +50,7 @@ public class LedgerService {
     private final RateRepository rateRepo;
     private final ExcelServices excelService;
     private final CategoryRepository categoryRepo;
+    private final YearRangeRepository yearRangeRepository;
 
     @Transactional(readOnly = true)
     public Page<LedgerResponse> getLedger(LocalDate startDate,
@@ -57,6 +59,7 @@ public class LedgerService {
                                           Integer officeCode,
                                           Pageable pageable) {
     	Integer yearRangeId=1;
+    	
     	Page<Item> itemsPage = itemRepo.findAllByOfficeCode(officeCode, pageable);
     	
     	if (categoryCode != null && categoryCode.length()>0) {
@@ -78,6 +81,8 @@ public class LedgerService {
 
             if (!hasSubItems) {
                 // get all rates (units) for item (subItem = null)
+//            	YearRange openingYR =
+//            		    yearRangeRepository.findByOfficeCodeAndDate(officeCode, startDate);
                 List<Rate> rates = rateRepo.findRatesByItemAndOptionalSubItem(item.getId(), null, yearRangeId);
                 Set<Integer> unitIdsAdded = new HashSet<>();
 
