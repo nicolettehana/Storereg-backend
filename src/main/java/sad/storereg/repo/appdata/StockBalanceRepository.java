@@ -24,7 +24,7 @@ public interface StockBalanceRepository extends JpaRepository<StockBalance, Long
 		    SELECT sb FROM StockBalance sb
 		    WHERE sb.item.id = :itemId
 		      AND (:subItemId IS NULL OR sb.subItem.id = :subItemId)
-		      AND sb.date <= :date
+		      AND sb.date <= :date 
 		    ORDER BY sb.date DESC
 		    LIMIT 1
 		""")

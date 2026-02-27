@@ -226,22 +226,38 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 				    WHERE pi.item.id = :itemId
 				      AND (:subItemId IS NULL OR pi.subItem.id = :subItemId)
 				      AND p.date > :fromDate
-				      AND p.date <= :toDate
+				      AND p.date <= :toDate 
+				      AND p.receiptEntryDate != null
 				""")
 				int sumPurchasedAfter(Long itemId, Long subItemId, LocalDate fromDate, LocalDate toDate);
 			
+//			@Query("""
+//				    SELECT pi.item.category.name,
+//				           pi.item.category.code,
+//				           SUM(pi.amount)
+//				    FROM PurchaseItems pi
+//				    WHERE pi.purchase.date BETWEEN :fromDate AND :toDate AND pi.item.category.officeCode=:officeCode 
+//				    GROUP BY pi.item.category.name, pi.item.category.code
+//				""")
+//				List<Object[]> getCategoryTotals(
+//				        @Param("fromDate") LocalDate fromDate,
+//				        @Param("toDate") LocalDate toDate,
+//				        @Param("officeCode") Integer officeCode);
+			
 			@Query("""
-				    SELECT pi.item.category.name,
-				           pi.item.category.code,
-				           SUM(pi.amount)
-				    FROM PurchaseItems pi
-				    WHERE pi.purchase.date BETWEEN :fromDate AND :toDate AND pi.item.category.officeCode=:officeCode
-				    GROUP BY pi.item.category.name, pi.item.category.code
-				""")
-				List<Object[]> getCategoryTotals(
-				        @Param("fromDate") LocalDate fromDate,
-				        @Param("toDate") LocalDate toDate,
-				        @Param("officeCode") Integer officeCode);
+			        SELECT pi.item.category.name,
+			               pi.item.category.code,
+			               SUM(pi.amount)
+			        FROM PurchaseItems pi
+			        WHERE pi.purchase.date BETWEEN :fromDate AND :toDate
+			          AND pi.item.category.officeCode = :officeCode
+			          AND pi.purchase.receiptEntryDate IS NOT NULL
+			        GROUP BY pi.item.category.name, pi.item.category.code
+			       """)
+			List<Object[]> getCategoryTotals(
+			        @Param("fromDate") LocalDate fromDate,
+			        @Param("toDate") LocalDate toDate,
+			        @Param("officeCode") Integer officeCode);
 
 
 			@Query("""

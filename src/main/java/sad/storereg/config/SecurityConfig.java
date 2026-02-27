@@ -54,6 +54,9 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http.csrf().disable()
+//		http.csrf(csrf -> csrf
+//	            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+//		        )
 
 		.authorizeHttpRequests(auth -> auth .requestMatchers("/auth/**", "/csrf-token","/api/**","/my-report","/api2").permitAll() 
 				.requestMatchers(GET, "/users/get-user-info").hasAnyAuthority(USER.name(), ADMIN.name()) 
