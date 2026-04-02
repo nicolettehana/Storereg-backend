@@ -36,6 +36,7 @@ import sad.storereg.dto.appdata.PurchaseReceiptSubItems;
 import sad.storereg.dto.appdata.PurchaseResponseDTO;
 import sad.storereg.dto.appdata.SubItemPurchaseDTO;
 import sad.storereg.exception.ObjectNotFoundException;
+import sad.storereg.exception.UnauthorizedException;
 import sad.storereg.models.appdata.Purchase;
 import sad.storereg.models.appdata.PurchaseItems;
 import sad.storereg.models.appdata.PurchaseNonStock;
@@ -1477,6 +1478,16 @@ public class PurchaseService {
 	    	}
 
 	    return dto;
+	}
+	
+	public void deletePurchaseOrder(Long purchaseId) {
+		Purchase purchase = purchaseRepository.findById(purchaseId).orElseThrow();
+		
+		if(purchase.getBillDate()!=null)
+			throw new UnauthorizedException("Unable to delete received items");
+		
+		purchaseRepository.delete(purchase);
+		
 	}
 
 }

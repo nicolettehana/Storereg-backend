@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -159,6 +160,15 @@ public class PurchaseController {
 	         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=purchase_receipts_ns_"+categoryCode+"_"+startDate+"-"+endDate+".xlsx")
 	         .contentType(MediaType.APPLICATION_OCTET_STREAM)
 	         .body(excelData);
+	 }
+	 
+	 @Auditable
+	 @DeleteMapping({"/{purchaseId}" })
+	 public ResponseEntity<String> deletePurchaseOrder(@PathVariable Long purchaseId){
+		 
+		 purchaseService.deletePurchaseOrder(purchaseId);
+		 return ResponseEntity.ok("Successfully deleted purchase order");
+		 
 	 }
 	 
 }

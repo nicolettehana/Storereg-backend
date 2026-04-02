@@ -2,6 +2,7 @@ package sad.storereg.config;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.DELETE;
 import static sad.storereg.models.auth.Role.ADMIN;
 import static sad.storereg.models.auth.Role.USER;
 import static sad.storereg.models.auth.Role.SAD;
@@ -68,6 +69,7 @@ public class SecurityConfig {
 				.requestMatchers(POST, "/issue/create").hasAnyAuthority(SAD.name(), ISS.name())
 				.requestMatchers(GET,"/audit-trail/**","/users/all/**").hasAnyAuthority(ADMIN.name()) 
 				.requestMatchers(POST,"/users/enable-disable/**").hasAnyAuthority(ADMIN.name()) 
+				.requestMatchers(DELETE,"/purchase/**").hasAnyAuthority(SAD.name()) 
 				 )
 				
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()

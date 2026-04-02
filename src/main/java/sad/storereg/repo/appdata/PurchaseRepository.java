@@ -62,7 +62,7 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long>{
 		            OR (:status = 'P' AND p.billNo IS NULL)
 		            OR (:status = 'R' AND p.billNo IS NOT NULL)
 		          ) 
-		          AND i.officeCode=:officeCode
+		          AND i.officeCode=:officeCode ORDER BY p.date DESC
 		""")
 		Page<Purchase> searchPurchases(
 		        @Param("startDate") LocalDate startDate,
