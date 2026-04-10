@@ -88,6 +88,7 @@ public class RateService {
         dto.setName(item.getName());
         dto.setCategory(item.getCategory().getName());
         dto.setCategoryCode(item.getCategory().getCode());
+        
 
         if (yearRange != null) {
             dto.setStartYear(yearRange.getStartYear());
@@ -96,6 +97,9 @@ public class RateService {
 
         // Item WITHOUT sub-items → unit-wise rates
         if (item.getSubItems() == null || item.getSubItems().isEmpty()) {
+        	
+        	if(item.getBaseUnit()!=null)
+        		dto.setBaseUnitId(item.getBaseUnit().getId());
 
             if (yearRange != null) {
                 List<Rate> rates = rateRepository
@@ -121,6 +125,8 @@ public class RateService {
         SubItemRateDTO dto = new SubItemRateDTO();
         dto.setId(subItem.getId());
         dto.setName(subItem.getName());
+        if(subItem.getBaseUnit()!=null)
+        	dto.setBaseUnitId(subItem.getBaseUnit().getId());
 
         if (yearRange != null) {
             List<Rate> rates = rateRepository
@@ -195,7 +201,7 @@ public class RateService {
                         rate.getYearRange().getStartYear(),
                         rate.getYearRange().getEndYear(),
                         
-                        null, null,
+                        null, null, item.getBaseUnit().getId(),
                         new ArrayList<>(),
                         new ArrayList<>()
                     )
@@ -233,7 +239,7 @@ public class RateService {
                         item.getCategory().getCode(),
                         rate.getYearRange().getStartYear(),
                         rate.getYearRange().getEndYear(),
-                        null, null,
+                        null, null,item.getBaseUnit().getId(),
                         new ArrayList<>(),
                         new ArrayList<>() //Hazel
                     )
@@ -247,7 +253,7 @@ public class RateService {
                         sub.getId(),
                         sub.getName(),
                         rate.getUnit().getUnit(),
-                        rate.getRate(), new ArrayList<>() //Hazel
+                        rate.getRate(), sub.getBaseUnit().getId(), new ArrayList<>() //Hazel
                     )
                 );
 
@@ -284,7 +290,7 @@ public class RateService {
                             sub.getId(),
                             sub.getName(),
                             null,
-                            null, new ArrayList<>()  //Hazel
+                            null, sub.getBaseUnit().getId(), new ArrayList<>()  //Hazel
                         )
                     );
                 } else {
@@ -377,7 +383,7 @@ public class RateService {
                         rate.getYearRange().getStartYear(),
                         rate.getYearRange().getEndYear(),
                         
-                        null, null,
+                        null, null, item.getBaseUnit().getId(),
                         new ArrayList<>(),new ArrayList<>() //Hazel
                     )
                 );
@@ -402,7 +408,7 @@ public class RateService {
                         item.getCategory().getCode(),
                         rate.getYearRange().getStartYear(),
                         rate.getYearRange().getEndYear(),
-                        null, null,
+                        null, null, item.getBaseUnit().getId(),
                         new ArrayList<>(), new ArrayList<>() //Hazel
                     )
                 );
@@ -415,7 +421,7 @@ public class RateService {
                         sub.getId(),
                         sub.getName(),
                         rate.getUnit().getUnit(),
-                        rate.getRate(), new ArrayList<>() //Hazel
+                        rate.getRate(), sub.getBaseUnit().getId(), new ArrayList<>() //Hazel
                     )
                 );
 
@@ -452,7 +458,7 @@ public class RateService {
                             sub.getId(),
                             sub.getName(),
                             null,
-                            null, new ArrayList<>() //Hazel
+                            null, sub.getBaseUnit().getId(), new ArrayList<>() //Hazel
                         )
                     );
                 } else {
@@ -670,8 +676,6 @@ public class RateService {
 	
 	public String addRate(ItemRateCreateDTO request) {
 		
-		System.out.println("Input: "+request);
-		
 		YearRange yearRange = yearRangeRepository.findById(request.getYearRangeId())
                 .orElseThrow(() -> new RuntimeException("YearRange not found"));
 
@@ -679,15 +683,16 @@ public class RateService {
 		Item item = itemRepository.findById(request.getItemId())
 				.orElseThrow(() -> new RuntimeException("Item not found"));
 		if(request.getSubItemId()!=null) {
+			
 			boolean exists=false;
-			System.out.println("Sub-item ID: "+request.getSubItemId());
+			
 			for(SubItems subItem:item.getSubItems()) {
 				
-				System.out.println("subItem ID: "+subItem.getId()+" request ID: "+request.getSubItemId());
-				System.out.println("First type: "+item.getName()+" sub-item "+subItem);
+				//System.out.println("subItem ID: "+subItem.getId()+" request ID: "+request.getSubItemId());
+				//System.out.println("First type: "+item.getName()+" sub-item "+subItem);
 				//if(subItem.getId()==request.getSubItemId()) {
 				if (subItem.getId().equals(request.getSubItemId())) {
-					System.out.println("True "+subItem.getId());
+					//System.out.println("True "+subItem.getId());
 					subItemm = subItem;
 					exists=true;
 				}
@@ -698,6 +703,9 @@ public class RateService {
         
         Unit unit = unitRepository.findById(request.getUnitId())
         		.orElseThrow(()-> new RuntimeException("Unit not found"));
+        
+        Unit baseUnit = unitRepository.findById(request.getBaseUnitId())
+        		.orElseThrow(()-> new RuntimeException("Base Unit not found"));
         
         if(request.getSubItemId()==null) {
         	if(rateRepository.findByItem_IdAndSubItemIsNullAndYearRange_IdAndUnit_Id(request.getItemId(), request.getYearRangeId(),
@@ -718,13 +726,19 @@ public class RateService {
         //itemRate.setObjectId(request.getSubItemId()==null?item.getId():request.getSubItemId());
         //if(request.getSubItemId()==null)
         itemRate.setItem(item);
-        if(request.getSubItemId()!=null)
+        if(request.getSubItemId()!=null) {
         	itemRate.setSubItem(subItemm);
+
+        }
         itemRate.setYearRange(yearRange);
         itemRate.setUnit(unit);
         itemRate.setCategory(item.getCategory());
         itemRate.setRate(request.getRate());
         itemRate.setEntryDate(LocalDateTime.now());
+        if(request.getUnitId()!=request.getBaseUnitId())
+    		itemRate.setBaseUnitQuantity(request.getBaseUnitQuantity());
+    	else
+    		itemRate.setBaseUnitQuantity(1);
 
         rateRepository.save(itemRate);
 		return("Rate added");

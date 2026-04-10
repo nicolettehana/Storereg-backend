@@ -136,7 +136,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return Bucket.builder().addLimit(limit).build();
     }
 	
-	private String loadConfig() {
+	private String loadConfig() throws IOException {
 		try {
 			Path path = Paths.get(configQuarters);
 			Properties properties = new Properties();
@@ -145,12 +145,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			return properties.getProperty("API_KEY");
 
 		} catch (IOException e) {
-			e.printStackTrace(); // Handle the exception appropriately
+			throw e;
 		}
-		return null;
 	}
 	
-	private String loadConfig2() {
+	private String loadConfig2() throws IOException {
 		try {
 			Path path = Paths.get(configQuarters);
 			Properties properties = new Properties();
@@ -159,8 +158,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			return properties.getProperty("Access_KEY");
 
 		} catch (IOException e) {
-			e.printStackTrace(); // Handle the exception appropriately
+			throw e;
 		}
-		return null;
 	}
 }

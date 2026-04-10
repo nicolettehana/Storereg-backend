@@ -16,6 +16,7 @@ public class SubItemRateDTO {
     private String name;
     private String unit;
     private Double rate;
+    private Integer baseUnitId;
     
     private List<UnitRateDTO> rates = new ArrayList<>();
 

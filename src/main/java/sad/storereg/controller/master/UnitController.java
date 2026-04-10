@@ -21,7 +21,6 @@ import sad.storereg.exception.InternalServerError;
 import sad.storereg.exception.UnauthorizedException;
 import sad.storereg.models.auth.User;
 import sad.storereg.models.master.Unit;
-import sad.storereg.models.master.YearRange;
 import sad.storereg.services.master.MasterDataServices;
 
 @RestController

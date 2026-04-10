@@ -13,6 +13,8 @@ public class ItemDTO {
     
     private Boolean hasSubItems;
     
-    private List<String> subItems;
+    private Integer unitId;
+    
+    private List<SubItemDTO> subItems;
 
 }

@@ -367,30 +367,58 @@ public class AuthenticationService {
 	}
 
 
+//	private void createKeys() {
+//		try {
+//			Path keyDirectory = Paths.get(keysDir).toAbsolutePath().normalize();
+//			Files.createDirectories(keyDirectory);
+//
+//			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+//			keyPairGenerator.initialize(2048);
+//			KeyPair keyPair = keyPairGenerator.generateKeyPair();
+//			PublicKey publicKey = keyPair.getPublic();
+//			PrivateKey privateKey = keyPair.getPrivate();
+//
+//			Path publicKeyPath = keyDirectory.resolve("public.key").normalize();
+//			
+//			try (FileOutputStream fos = new FileOutputStream(publicKeyPath.toFile())) {
+//				fos.write(publicKey.getEncoded());
+//			}
+//
+//			Path privateKeyPath = keyDirectory.resolve("private.key").normalize();
+//			try (FileOutputStream fos = new FileOutputStream(privateKeyPath.toFile())) {
+//				fos.write(privateKey.getEncoded());
+//			}
+//
+//		} catch (Exception e) {
+//			throw new InternalServerError("Failed to generate Key Pair for encryption", e);
+//		}
+//	}
+	
 	private void createKeys() {
-		try {
-			Path keyDirectory = Paths.get(keysDir).toAbsolutePath().normalize();
-			Files.createDirectories(keyDirectory);
+	    try {
+	        Path baseDir = Paths.get(keysDir).toAbsolutePath().normalize();
 
-			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-			keyPairGenerator.initialize(2048);
-			KeyPair keyPair = keyPairGenerator.generateKeyPair();
-			PublicKey publicKey = keyPair.getPublic();
-			PrivateKey privateKey = keyPair.getPrivate();
+	        Path keyDirectory = baseDir.resolve(keysDir).normalize();
 
-			Path publicKeyPath = keyDirectory.resolve("public.key").normalize();
-			try (FileOutputStream fos = new FileOutputStream(publicKeyPath.toFile())) {
-				fos.write(publicKey.getEncoded());
-			}
+	        if (!keyDirectory.startsWith(baseDir)) {
+	            throw new SecurityException("Invalid keys directory path");
+	        }
 
-			Path privateKeyPath = keyDirectory.resolve("private.key").normalize();
-			try (FileOutputStream fos = new FileOutputStream(privateKeyPath.toFile())) {
-				fos.write(privateKey.getEncoded());
-			}
+	        Files.createDirectories(keyDirectory);
 
-		} catch (Exception e) {
-			throw new InternalServerError("Failed to generate Key Pair for encryption", e);
-		}
+	        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+	        keyPairGenerator.initialize(2048);
+	        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
+	        Files.write(keyDirectory.resolve("public.key"),
+	                keyPair.getPublic().getEncoded());
+
+	        Files.write(keyDirectory.resolve("private.key"),
+	                keyPair.getPrivate().getEncoded());
+
+	    } catch (Exception e) {
+	        throw new InternalServerError("Failed to generate Key Pair for encryption", e);
+	    }
 	}
 
 	public String getPublicKey() throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {

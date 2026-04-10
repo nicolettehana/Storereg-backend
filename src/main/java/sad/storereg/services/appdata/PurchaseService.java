@@ -438,9 +438,11 @@ public class PurchaseService {
 		String totalStock = availableStock.stream()
 		        .map(r -> ((Number) r[2]).intValue() + " " + r[1])   // balance + unitName
 		        .collect(Collectors.joining(", "));
-
-		//System.out.println("ItemID: "+itemId+" subItemId: "+subItemId+" unitId: "+unitId+" date: "+date+" available stock: "+availableStock);
-	    return totalStock;
+		
+		String result = totalStock.contains(",")
+		        ? totalStock.substring(0, totalStock.indexOf(","))
+		        : totalStock;
+	    return result;
 	}
 	
 	public Map<String, Object> getFinancialYearReport(int year, Integer officeCode) {

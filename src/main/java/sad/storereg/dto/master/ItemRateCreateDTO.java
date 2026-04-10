@@ -1,8 +1,5 @@
 package sad.storereg.dto.master;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,5 +16,7 @@ public class ItemRateCreateDTO {
 
     private Integer unitId;     // only for items with no subItems
     private Double rate;     // only for items with no subItems
+    private Integer baseUnitQuantity;
+    private Integer baseUnitId;
 
 }

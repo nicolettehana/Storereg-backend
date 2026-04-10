@@ -25,6 +25,7 @@ public class UnitRateDTO {
 	
 	private Integer balance;
 	
+	
 	// ✅ Custom lightweight constructor
     public UnitRateDTO(Integer unitId, String unit, String unitName, Double rate) {
         this.unitId = unitId;

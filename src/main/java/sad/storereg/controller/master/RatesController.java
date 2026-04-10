@@ -54,7 +54,8 @@ public class RatesController {
 		if(request.getItemId()==null || request.getRate()==null || request.getUnitId()==null || request.getYearRangeId()==null)
 			throw new BadRequestException("Invalid input");
         return ResponseEntity.ok(rateService.addRate(request));
-		//return ResponseEntity.ok("ok");
+//		System.out.println("Received: "+request);
+//		return ResponseEntity.ok("ok");
     }
 	
 	@GetMapping({ "/export", "/export/{category}" })

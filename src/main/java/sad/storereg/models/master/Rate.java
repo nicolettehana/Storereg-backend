@@ -59,5 +59,8 @@ public class Rate {
 	@JsonIgnore
 	@Column(name = "entrydate")
 	private LocalDateTime entryDate;
+	
+	@Column(name="base_unit_quantity")
+	private Integer baseUnitQuantity;
 
 }

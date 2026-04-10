@@ -113,12 +113,18 @@ public class MasterDataServices {
 			// Map Rate entities to UnitRateDTO
 	        return rates.stream()
 	                .map(rate -> {
+	                	//System.out.println("Item id : "+rate.getItem().getId());
 	                    UnitRateDTO dto = new UnitRateDTO();
-	                    dto.setUnitId(rate.getUnit().getId());
-	                    dto.setUnitName(rate.getUnit().getUnit());
+	                    //dto.setUnitId(rate.getUnit().getId());
+	                    //dto.setUnitName(rate.getUnit().getUnit());
 	                    dto.setItemId(rate.getItem().getId());
 	                    dto.setSubItemId(rate.getSubItem()!=null?rate.getSubItem().getId():null);
-	                    dto.setUnit(rate.getUnit().getName());
+	                    //dto.setUnit(rate.getUnit().getName());
+	                    if(rate.getItem().getBaseUnit()!=null) {
+		                    dto.setUnitId(rate.getItem().getBaseUnit().getId());
+		                    dto.setUnitName(rate.getItem().getBaseUnit().getUnit());
+		                    dto.setUnit(rate.getItem().getBaseUnit().getUnit());
+	                    }
 	                    dto.setBalance(purchaseService.getAvailableBalance(rate.getItem().getId(), rate.getSubItem()==null?null:rate.getSubItem().getId(), rate.getUnit().getId(), issueDate==null?LocalDate.now():null));
 	                    return dto;
 	                })
@@ -169,6 +175,14 @@ public class MasterDataServices {
 	    	unitRepo.save(unit);
 	    	return "Added successfully";
 		}catch(Exception ex) {
+			throw ex;
+		}
+    }
+	
+	public Unit getUnit(Integer unitId) {
+		try {
+				return unitRepo.findById(unitId).orElseThrow();
+			}catch(Exception ex) {
 			throw ex;
 		}
     }

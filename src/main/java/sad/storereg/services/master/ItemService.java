@@ -19,6 +19,7 @@ import sad.storereg.dto.master.ItemDTO;
 import sad.storereg.models.master.Category;
 import sad.storereg.models.master.Item;
 import sad.storereg.models.master.SubItems;
+import sad.storereg.models.master.Unit;
 import sad.storereg.repo.master.CategoryRepository;
 import sad.storereg.repo.master.ItemRepository;
 import sad.storereg.services.appdata.ExcelServices;
@@ -35,6 +36,7 @@ public class ItemService {
 	private final CategoryRepository categoryRepository;
 	private final PurchaseService purchaseService;
 	private final ExcelServices excelService;
+	private final MasterDataServices masterDataServices;
 
     public Page<Item> getItems(Pageable pageable, String search, Integer officeCode, String category) {
     	
@@ -84,11 +86,14 @@ public class ItemService {
         if (Boolean.TRUE.equals(request.getHasSubItems()) &&
             request.getSubItems() != null && !request.getSubItems().isEmpty()) {
 
+        	// Map SubItemDTO -> SubItems entity
             List<SubItems> subItemList = request.getSubItems().stream()
-                .map(name -> {
+                .map(dto -> {
                     SubItems s = new SubItems();
-                    s.setName(name);
-                    s.setItem(item); // link back
+                    s.setName(dto.getName());          
+                    Unit unit = masterDataServices.getUnit(dto.getUnitId());
+                    s.setBaseUnit(unit);
+                    s.setItem(item);                    
                     return s;
                 })
                 .collect(Collectors.toList());
@@ -97,6 +102,8 @@ public class ItemService {
 
         } else {
             item.setSubItems(null);
+            Unit unit = masterDataServices.getUnit(request.getUnitId());
+            item.setBaseUnit(unit);
         }
 
         itemRepository.save(item);

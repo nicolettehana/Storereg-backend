@@ -49,5 +49,13 @@ public class SubItems {
     
     @Transient
     private String balance;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+        name = "base_unit",        // FK column in items table
+        referencedColumnName = "id",
+        nullable = false
+    )
+    private Unit baseUnit;
 
 }
