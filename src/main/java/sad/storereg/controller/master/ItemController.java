@@ -43,6 +43,7 @@ public class ItemController {
     	        @RequestParam(defaultValue = "") String search,
     	        @AuthenticationPrincipal User user
     ) {
+    	
         Pageable pageable = PageRequest.of(page, size);
 
         return itemService.getItems(pageable, search, user.getOfficeCode(), category);

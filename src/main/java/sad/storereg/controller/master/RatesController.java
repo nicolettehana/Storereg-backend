@@ -2,7 +2,6 @@ package sad.storereg.controller.master;
 
 import java.io.IOException;
 
-import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
@@ -50,9 +49,10 @@ public class RatesController {
 	
 	@Auditable
 	@PostMapping("/add")
-    public ResponseEntity<?> addRate(@RequestBody ItemRateCreateDTO request) throws BadRequestException {
+    public ResponseEntity<?> addRate(@RequestBody ItemRateCreateDTO request) {
 		if(request.getItemId()==null || request.getRate()==null || request.getUnitId()==null || request.getYearRangeId()==null)
-			throw new BadRequestException("Invalid input");
+			return (ResponseEntity<?>) ResponseEntity.badRequest();
+			//throw new BadRequestException("Invalid input");
         return ResponseEntity.ok(rateService.addRate(request));
 //		System.out.println("Received: "+request);
 //		return ResponseEntity.ok("ok");
